@@ -1,0 +1,60 @@
+# ── Virtual environments ───────────────────────────────────────────────
+.venv/
+venv/
+env_venv/
+ENV/
+
+# ── Python caches ──────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ── Editors / IDE ──────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── OS junk ────────────────────────────────────────────────────────────
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ── Generated datasets (regenerate via Create_dataset.ipynb) ───────────
+data/*
+!data/.gitkeep
+
+# ── Runtime / logs / checkpoints produced by training ──────────────────
+runs/
+logs/
+wandb/
+tb_logs/
+lightning_logs/
+checkpoints/
+*.log
+
+# ── Large model artifacts (keep KITTI pretrained intentionally) ────────
+# PointPillars_module/pretrained/epoch_160.pth is intentionally TRACKED.
+# Any other checkpoint files elsewhere are ignored:
+*.ckpt
+*.pt
+!PointPillars_module/pretrained/*.pth
+
+# ── Secrets ────────────────────────────────────────────────────────────
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+
+# ── Build / packaging ──────────────────────────────────────────────────
+build/
+dist/
+*.whl

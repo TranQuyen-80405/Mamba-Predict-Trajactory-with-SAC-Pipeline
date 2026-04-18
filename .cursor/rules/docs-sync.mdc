@@ -1,0 +1,99 @@
+---
+description: Maintenance rule — keep docs/*.md specs and code in sync. Any change to pipeline architecture, data contracts, SAC internals, perception API, env/camera spec, reward formula, or dependency list MUST update the owning doc(s) in docs/ in the same change.
+alwaysApply: true
+---
+
+# Docs ↔ Code Sync Rule
+
+The three specs in `docs/` form the architectural source of truth:
+
+| File                                   | Owns (authoritative)                                                                                       |
+|----------------------------------------|------------------------------------------------------------------------------------------------------------|
+| `docs/strategy_full_pipeline.md`       | End-to-end architecture, data contracts (dataclasses, tensor shapes), Stage A + Stage B orchestration, replay-buffer layout, env / camera / reward spec, A/B test framing, Mamba streaming. **Architectural tiebreaker.** |
+| `docs/module_pointpillar.md`           | `PointPillarsNeckExtractor` API + depth-camera preprocessing helpers. Dependency list (lean stack).        |
+| `docs/strategy_finetune_with_SAC.md`   | SAC internals: Actor/Critic MLP on proprio, BN-lock hook, freeze regimes S1/S2/S3, SAC hyperparameters, optimizer groups, debugging checklist. |
+
+Whenever the code changes, or an idea/design changes, update the owning doc first, then propagate cross-references.
+
+---
+
+## 1. Trigger matrix — when to update what
+
+| You are changing…                                                                       | Must update                                                                                          |
+|-----------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
+| Pipeline architecture (new module, branch added/removed, reward path)                   | `docs/strategy_full_pipeline.md` (owner) first; then summaries / cross-refs in the other two docs.    |
+| Stage A recipe (dataset, labels, loss, freeze schedule, hyperparameters)                | `docs/strategy_full_pipeline.md` § 5.                                                                 |
+| Stage B recipe (weight transfer, optimizer groups, reward decomposition)                | `docs/strategy_full_pipeline.md` § 6 + mirror hyperparameters in `strategy_finetune_with_SAC.md` § 12. |
+| Replay-buffer contents                                                                  | `docs/strategy_full_pipeline.md` § 6.4 + cross-ref in `strategy_finetune_with_SAC.md` § 6.3.          |
+| Camera / env spec (resolution, FoV, `dt`, episode length, action space)                 | `docs/strategy_full_pipeline.md` § 5.1 / § 6.6 (owner) + mirror in `strategy_finetune_with_SAC.md` § 10. |
+| Reward formula (`r_env`, `r_risk`, `λ_risk`) or A/B framing                             | `docs/strategy_full_pipeline.md` § 6.3 / § 6.3.1 / § 6.6 (owner) + mirror in `strategy_finetune_with_SAC.md` § 11. |
+| Mamba streaming behavior or `T_ctx`                                                     | `docs/strategy_full_pipeline.md` § 6.4.2.                                                             |
+| Data contracts (tensor shapes, dataclasses, dtypes)                                     | `docs/strategy_full_pipeline.md` § 3 (owner) + perception tensors in `module_pointpillar.md`.         |
+| Code inside `module_pointpillar.py` (signatures, dataclasses, default values)           | `docs/module_pointpillar.md` + its Changelog table.                                                   |
+| Preprocessing contract (depth → pts frame, intensity, range filter)                     | `docs/module_pointpillar.md` + `strategy_full_pipeline.md` § 4.1 / § 5.1.                             |
+| Which PointPillars submodules are exposed / frozen                                      | All three docs: API in `module_pointpillar.md`, freeze regime in `strategy_finetune_with_SAC.md` § 4, weight-transfer map in `strategy_full_pipeline.md` § 6.1. |
+| Dependency list (`requirements.txt`)                                                    | `docs/module_pointpillar.md` § 2.1 + `strategy_full_pipeline.md` § 7.                                 |
+| Actor / Critic architecture                                                             | `docs/strategy_finetune_with_SAC.md` § 7 (owner) + cross-ref in `strategy_full_pipeline.md` § 4.5 / § 4.6. |
+| Optimizer groups, LRs, gradient-clip, Polyak τ                                          | `docs/strategy_finetune_with_SAC.md` § 8 + § 12 (owner) + mirror in `strategy_full_pipeline.md` § 6.2. |
+| Freeze regimes S1 / S2 / S3                                                             | `docs/strategy_finetune_with_SAC.md` § 4 (owner) + cross-ref in `strategy_full_pipeline.md` § 6.1 + § 6.8. |
+| BN-lock hook (`install_bn_lock`, `apply_freeze_policy`)                                 | `docs/strategy_finetune_with_SAC.md` § 4.2 (owner) + cross-ref in `strategy_full_pipeline.md` § 6.5.  |
+| SAC update pseudocode                                                                   | `docs/strategy_finetune_with_SAC.md` § 6.2.                                                           |
+| Aux BCE loss wiring for Stage B-plus                                                    | `docs/strategy_finetune_with_SAC.md` § 9.2 (owner) + cross-ref in `strategy_full_pipeline.md` § 6.8.  |
+
+---
+
+## 2. Per-change checklist
+
+Any change that touches a doc, `module_pointpillar.py`, or the RL code must satisfy:
+
+1. **Ownership respected.** Change the owning doc first (§ 1 table); other docs only get cross-refs or mirrored summaries.
+2. **Changelog row added** in every doc actually modified. One row per doc with date, author, and a 1–3 line summary.
+3. **Version bump** if the change breaks a downstream consumer (removed dataclass field, changed tensor shape, changed default hyperparameter that affects reported results, API signature). Use `vX.Y` where X = breaking, Y = additive.
+4. **Grep sweep for stale terms.** If you rename / remove a concept, search the whole repo for the old name and update every hit — diagrams, tables, checklists, and pseudocode included.
+5. **Cross-reference audit.** Every `§ X.Y` pointer touched must still resolve. If you renumber a section, check the other docs for stale references.
+6. **Diagram parity.** Block diagrams in `strategy_full_pipeline.md` § 1.2 and `strategy_finetune_with_SAC.md` § 2 must agree.
+7. **Code ↔ doc parity.** If code changed, the relevant doc section must match verbatim for signatures and defaults. If doc changed first (idea stage), add `> **Proposed — not yet implemented.**` to the affected section until code lands.
+8. **A/B test invariance.** Changes that affect BOTH BASELINE (`λ_risk=0`) and PROPOSED (`λ_risk=2`) identically are fine. Changes applying only to PROPOSED must be documented in `strategy_finetune_with_SAC.md` § 11.3 and flagged in § 15.11.
+
+---
+
+## 3. Idea-only changes (no code yet)
+
+- Mark affected sections with `> **Proposed — not yet implemented.**` at the top.
+- Add a `## Pending sync` subsection row to the changelog listing the code locations still to update.
+- Remove the banner and the Pending-sync row **in the same change that lands the code**.
+
+---
+
+## 4. Conflict resolution
+
+1. The row owner in § 1 above (and in the "Relationship to other docs" table of each doc) wins.
+2. If ownership is ambiguous or crosses boundaries, `docs/strategy_full_pipeline.md` is the architectural tiebreaker.
+3. Never resolve silently — add a changelog row explaining which doc was wrong and why it changed.
+
+---
+
+## 5. Minimum grep sweeps before finishing any change
+
+Run these on `docs/*.md` (and on any code that was touched). All hits must be deliberate historical notes (e.g. changelog lines explicitly describing what was removed).
+
+```
+rg -n "TODO\(sync\)|PENDING SYNC" docs/*.md
+rg -n "BEVStateExtractor|BEVFeatureExtractor" docs/*.md    # only allowed in v2/v3 changelog notes
+rg -n "10 Hz|640.*480|60°" docs/*.md                      # old camera/control specs
+rg -n "cached-?`?z`?|re-encode.*gradient" docs/*.md        # old buffer design
+rg -n "critic-only encoder update" docs/*.md               # only allowed when explicitly saying "not needed in default plan"
+```
+
+If any hit is not a deliberate historical note, fix it before declaring the change done.
+
+---
+
+## 6. Quick reminders — common pitfalls (pulled from the docs)
+
+- `λ_risk = 0.0` for BASELINE, `λ_risk = 2.0` for PROPOSED. Keep in the `[-0.4, 0.0]` ratio band with `r_env`.
+- Perception stream is fully frozen in S1. `.eval()` must be locked via the BN-lock hook on the top module — external `policy.train()` calls would otherwise flip BN running stats and destroy the frozen predictor.
+- Replay buffer in S1 stores only `(s, s_next, action, r_env, r_risk, done, episode_id, frame_idx)`. No `pts`, no BEV, no `z`.
+- Camera/env spec at Stage B **must match** Stage A `DataGenConfig` (20 Hz, 160×120, 90° FoV, near 0.1 / far 8.0, episode 400 steps, T_ctx=10). Any mismatch pushes the frozen risk branch OOD.
+- Points must be scaled up by ~5–10× before `extract_neck` for indoor PyBullet scenes (domain-gap hack).
+- On episode end, call `MambaStreamer.reset(env_idx)` or the hidden state leaks across episodes.

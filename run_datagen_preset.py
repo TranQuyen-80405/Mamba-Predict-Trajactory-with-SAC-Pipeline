@@ -1,0 +1,111 @@
+"""
+Named DataGenConfig presets for CLI / notebook subprocess.
+
+Dùng khi Jupyter kernel không có torch: notebook gọi
+  .venv\\Scripts\\python.exe run_datagen_preset.py <preset>
+thay vì import DataGenerator trong kernel.
+
+Presets:
+  smoke_nb       — giống cell tuỳ chọn notebook (data/stage_a_smoke_nb)
+  experiment     — bộ nhỏ để so sánh method (data/stage_a_experiment); xem docs/strategy_experiment_protocol.md
+  full           — dataset lớn (data/stage_a_full)
+  rgb_spotcheck  — 1 scene × 1 rollout ngắn, save_rgb=True → data/stage_a_rgb_spotcheck
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import sys
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, _HERE)
+sys.path.insert(0, os.path.join(_HERE, "PointPillars_module"))
+
+from create_dataset_module import DataGenerator
+from create_dataset_module.config import DataGenConfig
+
+
+def _cfg_smoke_nb() -> DataGenConfig:
+    return DataGenConfig(
+        out_dir=os.path.join(_HERE, "data", "stage_a_smoke_nb"),
+        n_scenes=10,
+        rollouts_per_scene=2,
+        frames_per_rollout=200,
+        policy_random_p=0.5,
+        policy_scripted_p=0.3,
+        policy_adversarial_p=0.2,
+        seed=0,
+    )
+
+
+def _cfg_experiment() -> DataGenConfig:
+    """
+    Small dataset for method comparison (Stage A/B lab runs).
+    See docs/strategy_experiment_protocol.md §2.1.
+    """
+    return DataGenConfig(
+        out_dir=os.path.join(_HERE, "data", "stage_a_experiment"),
+        n_scenes=24,
+        rollouts_per_scene=3,
+        frames_per_rollout=120,
+        policy_random_p=0.5,
+        policy_scripted_p=0.3,
+        policy_adversarial_p=0.2,
+        save_rgb=False,
+        seed=0,
+    )
+
+
+def _cfg_full() -> DataGenConfig:
+    return DataGenConfig(
+        out_dir=os.path.join(_HERE, "data", "stage_a_full"),
+        n_scenes=200,
+        rollouts_per_scene=4,
+        frames_per_rollout=400,
+        policy_random_p=0.5,
+        policy_scripted_p=0.3,
+        policy_adversarial_p=0.2,
+        seed=42,
+    )
+
+
+def _cfg_rgb_spotcheck() -> DataGenConfig:
+    """Ít frame, bật RGB để mở ảnh kiểm hành vi sim (dataset train nên để save_rgb=False)."""
+    return DataGenConfig(
+        out_dir=os.path.join(_HERE, "data", "stage_a_rgb_spotcheck"),
+        n_scenes=1,
+        rollouts_per_scene=1,
+        frames_per_rollout=120,
+        policy_random_p=0.34,
+        policy_scripted_p=0.33,
+        policy_adversarial_p=0.33,
+        save_rgb=True,
+        seed=0,
+    )
+
+
+PRESETS = {
+    "experiment": _cfg_experiment,
+    "smoke_nb": _cfg_smoke_nb,
+    "full": _cfg_full,
+    "rgb_spotcheck": _cfg_rgb_spotcheck,
+}
+
+
+def main() -> None:
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument(
+        "preset",
+        choices=sorted(PRESETS.keys()),
+        help="Tên preset (experiment | smoke_nb | full | rgb_spotcheck)",
+    )
+    args = p.parse_args()
+    cfg = PRESETS[args.preset]()
+    gen = DataGenerator(cfg)
+    gen.run()
+    print("last_stats:", gen.last_stats)
+
+
+if __name__ == "__main__":
+    main()

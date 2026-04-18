@@ -1,0 +1,105 @@
+"""
+Stage A losses.
+
+focal_bce(logits, targets, gamma=2.0, weight=(1.0, 0.8, 0.5))
+    Focal binary cross-entropy (§ 5.3 of docs/strategy_full_pipeline.md).
+    * logits  : (B, K) raw outputs (no sigmoid).
+    * targets : (B, K) float in {0, 1}.
+    * gamma   : focusing parameter; gamma=0 recovers vanilla BCEWithLogits.
+    * weight  : per-horizon scalar weights, length K.
+
+oversample_positive_indices(risk_1s, factor=10)
+    Sampler helper: indices list with positives duplicated ``factor`` times.
+    Used by the RiskDataset in create_dataset_module.
+"""
+
+from __future__ import annotations
+
+from typing import Iterable, List, Optional, Sequence, Union
+
+import numpy as np
+import torch
+import torch.nn.functional as F
+
+_NUMERIC_EPS = 1e-8
+
+
+def focal_bce(
+    logits: torch.Tensor,
+    targets: torch.Tensor,
+    gamma: float = 2.0,
+    weight: Optional[Sequence[float]] = (1.0, 0.8, 0.5),
+    reduction: str = "mean",
+) -> torch.Tensor:
+    """
+    Focal BCE with logits. Per-sample, per-horizon loss is:
+
+        p_t = sigmoid(logits) if target==1 else 1 - sigmoid(logits)
+        focal = -(1 - p_t)**gamma * log(p_t)
+
+    With ``weight`` applied as a scalar multiplier per horizon column.
+    """
+    if logits.shape != targets.shape:
+        raise ValueError(
+            f"logits {tuple(logits.shape)} and targets {tuple(targets.shape)} "
+            f"must match."
+        )
+
+    # BCE with logits gives us -log(p_t) per element (numerically stable).
+    bce = F.binary_cross_entropy_with_logits(logits, targets, reduction="none")
+
+    if gamma == 0.0:
+        focal = bce
+    else:
+        # p_t = exp(-bce) (since bce = -log p_t). Clamp away from {0,1} for (1-pt)**gamma.
+        pt = torch.exp(-bce)
+        pt = torch.clamp(pt, min=_NUMERIC_EPS, max=1.0 - _NUMERIC_EPS)
+        focal = ((1.0 - pt) ** gamma) * bce
+
+    if weight is not None:
+        w = torch.as_tensor(weight, dtype=focal.dtype, device=focal.device)
+        if w.ndim != 1 or w.shape[0] != focal.shape[-1]:
+            raise ValueError(
+                f"weight length {tuple(w.shape)} must match last dim "
+                f"{focal.shape[-1]} of logits."
+            )
+        focal = focal * w
+
+    if reduction == "mean":
+        return focal.mean()
+    if reduction == "sum":
+        return focal.sum()
+    if reduction == "none":
+        return focal
+    raise ValueError(f"unknown reduction: {reduction}")
+
+
+def oversample_positive_indices(
+    risk_1s: Union[np.ndarray, Sequence[float], torch.Tensor],
+    factor: int = 10,
+) -> List[int]:
+    """
+    Return a list of indices into ``risk_1s`` where every positive index is
+    duplicated ``factor`` times and every negative index appears exactly
+    once. Scene-stratified splitting (§ 5.6) is the caller's responsibility;
+    this helper only handles class balance within a split.
+
+    Example:
+        idxs = oversample_positive_indices(ds.risk_1s, factor=10)
+        sampler = SubsetRandomSampler(idxs)
+    """
+    if factor < 1:
+        raise ValueError(f"factor must be >= 1; got {factor}")
+
+    arr = np.asarray(
+        risk_1s.detach().cpu().numpy() if torch.is_tensor(risk_1s) else risk_1s
+    ).astype(np.float32).reshape(-1)
+
+    pos_idx = np.where(arr > 0.5)[0]
+    neg_idx = np.where(arr <= 0.5)[0]
+
+    out: List[int] = neg_idx.tolist() + pos_idx.repeat(factor).tolist()
+    return out
+
+
+__all__ = ["focal_bce", "oversample_positive_indices"]

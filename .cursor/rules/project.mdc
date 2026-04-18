@@ -1,0 +1,196 @@
+---
+description: Project architecture and code conventions for the RobotDog Pipeline (PointPillars → SpatialReducer → Mamba → RiskHead → SAC). Always apply.
+alwaysApply: true
+---
+
+# RobotDog Pipeline — Core Rule
+
+> Authoritative long-form specs live in `docs/`:
+> - `docs/strategy_full_pipeline.md` — architecture, data contracts, Stage A + Stage B (**source of truth**).
+> - `docs/module_pointpillar.md` — perception module API (`PointPillarsNeckExtractor`, depth→LiDAR helpers).
+> - `docs/strategy_finetune_with_SAC.md` — SAC-internal details (Actor/Critic MLPs on proprio, BN-lock hook, freeze regimes S1/S2/S3).
+>
+> When code and docs disagree, follow the row-owner in `docs/strategy_full_pipeline.md` § 13 / `docs/strategy_finetune_with_SAC.md` § 19. Architectural tiebreaker is `strategy_full_pipeline.md`.
+
+---
+
+## 1. Pipeline — two decoupled streams
+
+Perception stream (**frozen in default Stage B**):
+
+```
+depth → PointPillars → SpatialReducer → Mamba → RiskHead → p_risk
+                                                              │
+                                                              └──► r_risk = -λ_risk · p_risk_1s
+```
+
+Control stream (**SAC, trainable**):
+
+```
+ProprioState (base lin/ang vel + goal_rel + heading_err + last_action [+ joints])
+    → Actor (MLP)
+    → Critic twin-Q (MLP)
+    → a_t
+```
+
+The two streams only meet at the reward: `r_total = r_env + r_risk`.
+
+**Hard invariants (do not violate):**
+
+- SAC **never** consumes BEV / tokens / hidden states. State for Actor/Critic is the proprio vector from `env.read_proprio()`.
+- No encoder sits on the SAC gradient path. No `detach()` dance. No critic-only encoder update. No `BEVStateExtractor` / `BEVFeatureExtractor`.
+- Perception stream is **fully frozen** in default Stage B (S1): `requires_grad_(False)` on every param, `.eval()` mode locked via BN-lock hook.
+- Only `actor`, `critic_q1`, `critic_q2`, `log_alpha` receive gradient in S1.
+- `r_env` and `r_risk` are **stored separately** in the replay buffer (enables offline `λ_risk` re-weighting).
+
+---
+
+## 2. Stage A vs Stage B
+
+| Aspect            | Stage A (supervised pretrain)                          | Stage B default (S1, A/B test)                                      |
+|-------------------|---------------------------------------------------------|---------------------------------------------------------------------|
+| Loss              | Focal-BCE on 3-horizon collision labels (0.5 s / 1 s / 2 s) | Standard SAC (actor + 2 critics + α). No aux loss, no perception gradient. |
+| Trainable         | `SpatialReducer`, `Mamba`, `RiskHead` (+ `pp.neck` in A2) | **Only** Actor, twin Critics, `log_alpha`.                          |
+| Data              | Offline PyBullet rollouts                               | Online PyBullet env + replay buffer                                 |
+| Reward shaping    | —                                                       | `r_total = r_env + r_risk` (PROPOSED) or `r_env` only (BASELINE)    |
+| Buffer per transition | —                                                   | `(s, s_next, action, r_env, r_risk, done, episode_id, frame_idx)` — proprio only (~500 B) |
+
+Stage A sub-stages:
+- **A1 (5 epochs):** PointPillars frozen (KITTI weights); train `SpatialReducer + Mamba + RiskHead`. AdamW `lr=3e-4`, `wd=1e-4`, cosine warmup 500 iter.
+- **A2 (5 epochs):** unfreeze `pp.neck` only (`pillar_layer`, `pillar_encoder`, `backbone` stay frozen). Two param groups: neck `lr=3e-5`, rest `lr=1e-4`. Grad clip 1.0.
+
+---
+
+## 3. Canonical tensor shapes / dtypes
+
+| Symbol     | Producer          | Shape                   | Dtype   | Notes                                           |
+|------------|-------------------|-------------------------|---------|-------------------------------------------------|
+| `pts`      | preprocess        | `(N, 4)` per frame      | float32 | `[x, y, z, intensity]`, LiDAR frame             |
+| `bev_feat` | PointPillars neck | `(B, 384, 248, 216)`    | float32 | CUDA                                            |
+| `tok_grid` | SpatialReducer    | `(B, Nt=16, D=256)`     | float32 | 4×4 grid pool                                   |
+| `seq_tok`  | stack over T_ctx  | `(B, T_ctx*Nt, D)`      | float32 | `T_ctx = 10` → `L = 160`                        |
+| `h_T`      | Mamba             | `(B, D=256)`            | float32 | Streaming `step()` in Stage B carries hidden    |
+| `logits`   | RiskHead          | `(B, 3)`                | float32 | no sigmoid inside; use `BCEWithLogitsLoss`      |
+| `p_risk`   | sigmoid(logits)   | `(B, 3)`                | float32 | `[p_05s, p_1s, p_2s]`                           |
+| `s`        | `env.read_proprio`| `(B, d_s)`              | float32 | `d_s ≈ 10 + A` minimal, up to ~50 with joints   |
+| `a_t`      | Actor sample      | `(B, A)`                | float32 | `A = 3` default: `(v_x, v_y, ω_yaw)`, tanh-squashed |
+
+Mamba `T_ctx = 10` at 20 Hz = 0.5 s history. Keep this constant unless you update `docs/strategy_full_pipeline.md` § 6.4.2 in the same PR.
+
+---
+
+## 4. Module conventions (Python / PyTorch)
+
+### 4.1 Layout
+
+```
+PointPillars_module/
+├── module_pointpillar.py         # EXISTS: PointPillarsNeckExtractor + depth helpers
+├── pointpillars/                 # EXISTS: stripped model (neck-only)
+├── models/
+│   ├── spatial_reducer.py        # Conv2d ×3 + AdaptiveAvgPool2d((4,4)) → (B, 16, 256)
+│   ├── mamba_temporal.py         # mamba-ssm wrapper, d_model=256, d_state=16, expand=2, n_blocks=2
+│   ├── temporal_encoders.py    # LSTM + causal Transformer (Stage A ablations)
+│   ├── temporal_factory.py       # build_temporal(mamba|gru|lstm|transformer)
+│   ├── risk_head.py              # MLP 256→128→64→3 logits, Dropout(0.1)
+│   ├── trajectory_head.py        # h_T → (B,H,3) short future (x,y,yaw); joint Stage-A compare
+│   ├── full_pipeline.py          # forward(pts_seq)->logits for Stage A; step(pts,h_prev) for Stage B
+│   └── full_pipeline_risk_traj.py # FullPipeline + TrajectoryHead; forward → (risk_logits, traj)
+├── dataset_generator.py          # PyBullet offline rollouts → .npz per rollout
+├── risk_dataset.py               # torch Dataset + collate_fn (per-time-step list batching)
+├── train_stage_a_compare.py      # compare backbones: risk AP/AUC + traj ADE/FDE (Colab-friendly)
+├── train_stage_a.py              # placeholder for unified A1/A2 trainer
+├── train_stage_b_sac.py          # SAC Actor/Critic reference (proprio-only), clamps, Polyak helper
+├── utils/
+│   └── gradient_health.py        # grad norms, Polyak, EPS; see docs/skill_avoid_gradient_boom.md
+└── (losses.py, tests/, data_contracts.py, module_pointpillar.py, pointpillars/, …)
+
+rl/                               # (to be created for Stage B)
+├── env_pybullet.py               # Gym env, depth 160×120 @ 90°FoV, dt=0.05, 20 Hz
+├── networks.py                   # Actor (squashed Gaussian MLP), Critic (twin-Q MLP)
+├── risk_branch.py                # Loader for frozen SpatialReducer+Mamba+RiskHead + MambaStreamer
+├── sac_agent.py                  # SAC update per docs/strategy_finetune_with_SAC.md § 6.2
+├── train_sac.py                  # main loop + A/B harness (λ_risk=0 vs 2.0)
+└── aux_losses.py                 # Stage B-plus only
+```
+
+### 4.2 Dataclasses — use these names verbatim
+
+Anything that maps 1:1 to a doc must use the exact name: `PointPillarsConfig`, `PointCloudInput`, `NeckFeatureOutput`, `DepthCameraIntrinsics`, `CameraToLidarExtrinsics`, `DepthPreprocessConfig`, `DataGenConfig`, `EnvConfig`, `ProprioState`, `Trajectory`, `RiskSample`, `RiskBatch`, `Transition`.
+
+### 4.3 Hard rules for perception code
+
+- **Do not** reintroduce `Head`, `anchors_generator`, `iou3d_op`, `pointpillars/utils/`, or dependencies `numba / open3d / opencv-python / PyYAML / tqdm`. They were stripped in `module_pointpillar.md` v0.4.
+- `_load_weights` uses `strict=False` + prefix filter on `("pillar_layer.", "pillar_encoder.", "backbone.", "neck.")`.
+- `extract_neck` is decorated `@torch.no_grad()`. Default `do_range_filter=True`.
+- Call `filter_range` before voxelization to avoid `num_points=0` CUDA crash.
+- For PyBullet indoor scenes, scale points by `s ≈ 5–10` before `extract_neck` (domain-gap hack, see `docs/strategy_full_pipeline.md` § 4.1 and `docs/module_pointpillar.md` § 7).
+- `extract_neck` accepts `List[np.ndarray | torch.Tensor]` (one per frame). Never accept a pre-stacked `(B, N, 4)` tensor — different frames have different `N`.
+
+### 4.4 Hard rules for RL / SAC code
+
+- Actor: squashed Gaussian, 2-layer MLP (SiLU), `mu` + clamped `logstd ∈ [-5, 2]`, tanh correction in log-prob.
+- Critic: twin-Q, concat `(s, a)` then 2-layer MLP (SiLU) → `(q1, q2)`.
+- Target critics updated via Polyak, `τ = 0.005`. **No target encoder exists.**
+- Separate optimizers: `optim_actor`, `optim_critic` (both AdamW `lr=3e-4`, `wd=0`), `optim_alpha` (Adam `lr=3e-4`).
+- Grad clip `max_norm=1.0` on every backward.
+- Warmup 5 k random env steps. `gradient_steps_per_env_step = 1`. Target entropy `-dim(action)`.
+- Streaming: maintain one Mamba hidden state per env in `MambaStreamer`; reset on `done`. Per-env-step perception forward ≤ 50 ms (20 Hz budget).
+- Never run perception inside the gradient loop. `r_risk` is computed online at rollout time and stored as a float.
+- BN-lock: install the `install_bn_lock` hook on the top module so every `.train()` re-freezes perception submodules via `.eval()`. Unit-test: `assert pp.pillar_encoder.training == False` mid-training.
+
+### 4.5 Reward (must match `docs/strategy_full_pipeline.md` § 6.6)
+
+```
+r_env   =  w_goal·1[reached] + w_progress·Δdist − w_collision·1[hit] − w_time − w_action_norm·||a||² [− w_spin·|ω_yaw|]
+r_risk  = -λ_risk · p_risk_1s        # λ_risk = 0.0 (BASELINE) | 2.0 (PROPOSED)
+r_total = r_env + r_risk
+```
+
+Defaults: `w_goal=5.0, w_progress=1.0, w_collision=20.0, w_time=0.01, w_action_norm=0.001`. Monitor `E[r_risk] / E[r_env]` ∈ `[-0.4, 0.0]`.
+
+### 4.6 Environment / camera — shared invariants
+
+Must match `DataGenConfig` (Stage A) and `EnvConfig` (Stage B) exactly, otherwise the frozen risk branch sees OOD features:
+
+| Field                 | Value                    |
+|-----------------------|--------------------------|
+| `dt`                  | `0.05` (20 Hz)           |
+| `depth_hw`            | `(160, 120)`             |
+| `camera_fov_h_deg`    | `90.0`                   |
+| `camera_near / far`   | `0.1 / 8.0` m            |
+| `T_ctx`               | `10` frames (0.5 s)      |
+| Episode length        | `400` steps (20 s)       |
+| Action dim            | `3` — `(v_x, v_y, ω_yaw)`|
+
+### 4.7 Freeze regimes (default = S1)
+
+| Regime | `pp.pillar_encoder` | `pp.backbone` | `pp.neck` | risk branch | Actor / Critic |
+|--------|:---:|:---:|:---:|:---:|:---:|
+| **S1** (default Stage B, A/B test) | ❄ | ❄ | ❄ | ❄ | 🔥 |
+| **S2** (Stage B-plus)              | ❄ | ❄ | 🔥 `1e-5` | 🔥 `5e-5` / head `1e-4` | 🔥 |
+| **S3** (expert Stage B-plus)       | 🔥 `3e-6` | 🔥 `3e-6` | 🔥 `1e-5` | 🔥 `5e-5` / head `1e-4` | 🔥 |
+
+Only promote S1 → S2 after the A/B test has been measured AND the frozen risk predictor is miscalibrated (`p_risk` stuck ≈ 0/1 or Brier drift > 0.2). S2/S3 require adding the focal-BCE aux loss as a **separate backward pass** with λ_aux schedule `1.0 → 0.3 → 0.1 → 0.05` at steps `0 → 100k → 500k → 1M`.
+
+---
+
+## 5. Coding conventions
+
+- **Python ≥ 3.10**, **PyTorch ≥ 2.1**, **mamba-ssm 1.2.x** (fallback `nn.GRU(D, D, 2, batch_first=True)` if build fails).
+- Prefer `@dataclass` for config / contract objects. Type-hint everything at function boundaries.
+- All arrays on disk: NumPy `float32` (depth `float16` ok). All in-memory model tensors: `float32` contiguous on `cuda` (except the replay buffer, which stays on CPU).
+- Do **not** add redundant comments narrating code (no `# return result`, `# import module`). Comments should explain non-obvious intent or trade-offs (e.g. why we scale points by 5×).
+- English for all identifiers, docstrings, and comments (docs are in English too).
+- No binary assets or giant generated code dumps committed without an explicit request.
+- If you introduce lints, fix them before declaring done.
+
+---
+
+## 6. A/B test discipline
+
+Whenever adding / changing a knob that could affect the experiment:
+
+- If the change applies to **both** BASELINE (`λ_risk=0`) and PROPOSED (`λ_risk=2`) identically (e.g. new proprio field, different seed, different SAC LR), it's fine — just keep both runs matched.
+- If the change applies **only** to PROPOSED (e.g. a new risk-shaping term, a `λ_risk` schedule), document it in `docs/strategy_finetune_with_SAC.md` § 11.3 and add to the § 15.11 sanity check in the same PR.
+- Seeds, env config hashes, proprio layout hashes must be identical across BASELINE and PROPOSED. Unit-test this.
