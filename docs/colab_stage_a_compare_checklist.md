@@ -8,6 +8,12 @@ Dùng checklist này trên máy **local** (Windows/Linux), sau đó upload hoặ
 
 - [ ] Python ≥ 3.10, có thể chạy `DataGenerator` (PyBullet + deps theo repo).
 - [ ] Từ thư mục gốc repo (`Pipeline/`), kiểm tra: `python -c "import sys; print(sys.version)"`.
+- [ ] Cài deps cho datagen (PyBullet + NumPy + Matplotlib + Torch — xem `create_dataset_module/requirements.txt`):
+
+  ```bash
+  python -m pip install -r create_dataset_module/requirements.txt
+  ```
+
 - [ ] Nếu chỉ cần tạo data: dùng venv của project (ví dụ `.venv`) và `python run_datagen_preset.py experiment`.
 
 ---
@@ -143,6 +149,14 @@ print("OK: data + checkpoint paths")
 - `run_datagen_preset.py` — preset `experiment` → `data/stage_a_experiment`.
 - `docs/strategy_experiment_protocol.md` — quy mô lab và metric thống nhất (nếu cần đối chiếu).
 - `docs/strategy_full_pipeline.md` — contract Stage A / tensor shapes.
+
+---
+
+## 11. Changelog
+
+| Date       | Change |
+|------------|--------|
+| 2026-04-18 | §1: thêm lệnh `pip install -r create_dataset_module/requirements.txt` để tránh thiếu `pybullet` / `matplotlib` / `torch` khi chạy `run_datagen_preset.py` trên Colab hoặc máy local. |
 
 ---
 

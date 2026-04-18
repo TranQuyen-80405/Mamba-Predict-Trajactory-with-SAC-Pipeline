@@ -1,0 +1,13 @@
+# Runtime deps for Stage A offline dataset generation (PyBullet rollouts).
+#
+# Install from repo root:
+#   python -m pip install -r create_dataset_module/requirements.txt
+#
+# Notes:
+# - `pybullet_navigation` is imported as a top-level module; repo root must be on PYTHONPATH
+#   (running `python run_datagen_preset.py ...` from repo root does this).
+# - `torch` is pulled in because `create_dataset_module/__init__.py` re-exports `RiskDataset`.
+
+-r ../env/requirements.txt
+
+torch>=2.1.0

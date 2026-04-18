@@ -839,6 +839,7 @@ Recommended stack (Colab Pro+, CUDA 12.1):
 | mamba-ssm        | 1.2.x            | requires CUDA; pip install mamba-ssm    |
 | causal-conv1d    | 1.2.x            | dependency of mamba-ssm                 |
 | pybullet         | 3.2.6            | physics sim                             |
+| matplotlib       | ≥ 3.5            | `env/pybullet_navigation.py` plotting hooks (dataset gen / debug) |
 | tensorboard      | ≥ 2.14           | logging                                 |
 | tqdm             | latest           | progress bars                           |
 | scikit-learn     | latest           | AUC / calibration metrics               |
@@ -1075,6 +1076,7 @@ If any hit is NOT a deliberate historical note, fix before merging.
 | 2026-04-18 | v3.6   | Stage A temporal ablations in code: `temporal_encoders.py` (LSTM, causal Transformer), `temporal_factory.build_temporal`, `train_stage_a_compare.py` (focal loss, scene-stratified split, AP/AUC logging, TensorBoard). `FullPipeline.mamba=` may be any compatible `(B,L,D)→(B,L,D)` module. Transformer has no Stage B `step()`. §4.3 + file layout updated. |
 | 2026-04-18 | —      | Added `docs/skill_avoid_gradient_boom.md` + `PointPillars_module/utils/gradient_health.py`, `train_stage_b_sac.py` (SAC Actor/Critic reference, clamps, reward EMA helper), focal \(p_t\) clamp in `losses.py`, He init on `SpatialReducer` convs, grad-norm TensorBoard hooks in `train_stage_a_compare.py`. §13 row for skill doc. |
 | 2026-04-18 | v3.7   | **Stage A compare — joint trajectory + risk.** `RiskSample` / `RiskBatch` gain `traj_future_xyyaw` (`H×(x,y,yaw)` world poses after frame `t`). `RiskDataset` exposes `traj_horizon` (default `H=10`). `FullPipeline.forward_to_h_T` refactors encoding; new `TrajectoryHead` + `FullPipelineRiskAndTraj` predict the same `H` poses from `h_T`. `train_stage_a_compare` trains focal-BCE (risk) + SmoothL1 (trajectory) and reports validation **risk** AP/AUC (three horizons) plus **trajectory** RMSE (all dims), ADE/FDE in XY (m), RMSE yaw (rad). Stage B default path unchanged (`FullPipeline.step` = risk only). §3.2 / §3.3 updated. |
+| 2026-04-18 | v3.7.1 | **Dataset-gen dependency hygiene.** Added `create_dataset_module/requirements.txt` (includes `-r env/requirements.txt` for PyBullet + NumPy + Matplotlib, plus `torch` because `create_dataset_module` re-exports `RiskDataset`). Mirrored `matplotlib` in §7 recommended stack table. Updated `docs/colab_stage_a_compare_checklist.md` §1 with the one-liner install command. |
 
 ---
 
