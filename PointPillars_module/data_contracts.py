@@ -209,6 +209,11 @@ class RiskSample:
     risk_05s: torch.Tensor             # () float32 in {0.0, 1.0}
     risk_1s: torch.Tensor              # () float32
     risk_2s: torch.Tensor              # () float32
+    # Per-horizon mask (1 = include in focal loss). Training excludes truncated ends;
+    # defaults to all ones. Shape (3,) for [0.5s, 1s, 2s].
+    risk_label_valid: torch.Tensor = field(
+        default_factory=lambda: torch.ones(3, dtype=torch.float32)
+    )
 
     # Planar future ego poses (world frame): rows are frames t+1..t+H; cols (x, y, yaw).
     traj_future_xyyaw: torch.Tensor    # (H, 3) float32
@@ -240,6 +245,7 @@ class RiskBatch:
     risk_05s: torch.Tensor             # (B,) float32
     risk_1s: torch.Tensor              # (B,) float32
     risk_2s: torch.Tensor              # (B,) float32
+    risk_label_valid: torch.Tensor     # (B, 3) float32 in {0, 1}
 
     traj_future_xyyaw: torch.Tensor    # (B, H, 3) float32
 

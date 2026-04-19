@@ -4,7 +4,10 @@
 >
 > **Code map:** `PointPillars_module/module_pointpillar.py` (`PointPillarsNeckExtractor`), `PointPillars_module/models/{full_pipeline.py, spatial_reducer.py, mamba_temporal.py, risk_head.py}`, `create_dataset_module/{generator.py, risk_dataset.py}`, `PointPillars_module/losses.py` (`focal_bce`).
 >
-> **Proposed sections** (feature cache script / `RiskDataset` BEV mode) are marked; they are **not yet implemented** in the repo — implement in the same PR that lands the code, or treat as a research engineering spec.
+> **Implementation status (2026-04-19):** feature-cache path is now available via
+> `scripts/cache_pointpillars_bev.py` + `RiskDataset(bev_cache_root=...)` +
+> `train_stage_a_compare.py --bev_cache_root ...`. Legacy sections still marked
+> "Proposed" describe optional extensions (format/layout variants), not baseline usage.
 
 ---
 
@@ -41,7 +44,8 @@
 
 ## 2. Implementation guidance
 
-> **Proposed — not yet implemented.** The following matches existing **class/method names** and tensor shapes; land code + remove this banner in one PR.
+> **Implemented baseline:** BEV precompute + training from cache is available. The items
+> below remain as extension ideas for alternative storage/collate designs.
 
 ### 2.1 Script sketch: `cache_features.py` (repo root or `PointPillars_module/scripts/`)
 

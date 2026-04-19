@@ -117,8 +117,21 @@ class FullPipeline(nn.Module):
 
         tok_list: List[torch.Tensor] = []
         for t in range(T_ctx):
-            neck = self.pp.extract_neck_forward(pts_seq_bt[t])
-            bev = neck.feature                    # (B, 384, H, W)
+            frame = pts_seq_bt[t]
+            if not frame:
+                raise ValueError("pts_seq_bt contains an empty frame list.")
+            first = frame[0]
+            if first.ndim == 3:
+                # Cached BEV mode: each item is already one (C,H,W) feature map.
+                bev = torch.stack(frame, dim=0)
+            else:
+                # Raw points mode: run PointPillars neck online.
+                # Stage A1: ``extract_neck_forward`` is the differentiable path
+                # (vs ``extract_neck`` + no_grad). With ``pp.freeze_all()``,
+                # perception weights do not update; gradients train reducer /
+                # temporal / heads from the BEV feature tensor.
+                neck = self.pp.extract_neck_forward(frame)
+                bev = neck.feature                    # (B, 384, H, W)
             tok_t = self.reducer(bev)             # (B, Nt, D)
             tok_list.append(tok_t)
 

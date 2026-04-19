@@ -1,4 +1,4 @@
-# Checklist: chuẩn bị trước khi chạy `compare_trajactory_predict_module.ipynb` trên Google Colab (GPU T4)
+# Checklist: chuẩn bị trước khi chạy `notebooks/compare_trajactory_predict_module.ipynb` trên Google Colab (GPU T4)
 
 Dùng checklist này trên máy **local** (Windows/Linux), sau đó upload hoặc clone repo lên Colab. Mục tiêu: đủ **code + data Stage A + checkpoint PointPillars** đúng cấu trúc mà notebook đang `assert`.
 
@@ -57,25 +57,28 @@ Colab thường dùng `REPO_ROOT = "/content/Pipeline"`. Cấu trúc tối thi�
 
 ```text
 Pipeline/
-├── compare_trajactory_predict_module.ipynb
+├── notebooks/
+│   └── compare_trajactory_predict_module.ipynb
 ├── create_dataset_module/
+│   └── risk_dataset.py
 ├── data/
 │   └── stage_a_experiment/     ← từ bước 2
 │       ├── index.jsonl
 │       └── ... (các .npz rollout)
 ├── PointPillars_module/
-│   ├── train_stage_a_compare.py
-│   ├── risk_dataset.py
+│   ├── training/               ← Stage A train scripts (mamba, lstm, compare, …)
 │   ├── module_pointpillar.py
 │   ├── models/
 │   ├── pretrained/             ← từ bước 3
 │   │   └── epoch_160.pt hoặc epoch_160.pth
 │   └── ...
-└── run_datagen_preset.py       ← hữu ích nếu muốn regenerate trên Colab
+├── scripts/datagen/            ← implementation (preset experiment)
+├── run_datagen_preset.py       ← wrapper ở root (cùng lệnh như trước)
+└── pybullet_navigation.py
 ```
 
 - [ ] Đã có đủ **`PointPillars_module`**, **`create_dataset_module`**, **`data/stage_a_experiment`**, **`pretrained/`** như trên.
-- [ ] Nếu upload bằng ZIP: giải nén sao cho **`Pipeline/`** là thư mục gốc chứa `compare_trajactory_predict_module.ipynb` (không lồng sai một cấp).
+- [ ] Nếu upload bằng ZIP: giải nén sao cho **`Pipeline/`** là thư mục gốc chứa `notebooks/compare_trajactory_predict_module.ipynb` (không lồng sai một cấp).
 
 ---
 
@@ -125,7 +128,7 @@ print("OK: data + checkpoint paths")
 
 ## 8. Chạy notebook so sánh
 
-- [ ] Mở `compare_trajactory_predict_module.ipynb`.
+- [ ] Mở `notebooks/compare_trajactory_predict_module.ipynb`.
 - [ ] Đảm bảo `REPO_ROOT` trong cell chính trùng path trên Colab.
 - [ ] Chạy lần lượt các cell: pip → import + `run_experiment`.
 - [ ] Output mong đợi: log TensorBoard dưới `runs/stage_a_compare/`, file `summary.json` (metrics + đường dẫn checkpoint), và thư mục **`runs/stage_a_compare/weights/`** với file `.pt` mỗi backbone: `{tên}_stage_a_compare_<timestamp>.pt` và `{tên}_stage_a_compare.pt` (latest).
@@ -138,7 +141,7 @@ print("OK: data + checkpoint paths")
 |-------------|-------------|
 | `Thiếu data: .../stage_a_experiment` | `git pull` / clone lại repo (data đã có trên remote), hoặc chạy `run_datagen_preset.py experiment` rồi commit — hoặc upload thư mục `data/stage_a_experiment` lên Drive/Colab. |
 | `Thiếu checkpoint trong .../pretrained` | Copy `epoch_160.pt` hoặc `.pth` vào đúng `PointPillars_module/pretrained/`. |
-| Lỗi import `train_stage_a_compare` | `os.chdir(REPO_ROOT)` và `sys.path` phải chứa `PointPillars_module` — đúng như cell notebook; kiểm tra đang ở đúng thư mục repo. |
+| Lỗi import `train_stage_a_compare` | `os.chdir(REPO_ROOT)` và `sys.path` phải chứa `PointPillars_module` — đúng như cell notebook; module nằm trong `PointPillars_module/training/`. |
 | CUDA / wheel PyTorch | Đổi index `cu124` ↔ `cu121`; hoặc dùng torch có sẵn của Colab rồi chỉ `pip install` các gói còn thiếu. |
 | `causal-conv1d` / `mamba-ssm` fail trên Windows | Chạy notebook trên **Colab GPU** hoặc **WSL2 Linux**; không expect pip build thành công trên Windows native. |
 
@@ -158,6 +161,7 @@ print("OK: data + checkpoint paths")
 |------------|--------|
 | 2026-04-18 | §1: thêm lệnh `pip install -r create_dataset_module/requirements.txt` để tránh thiếu `pybullet` / `matplotlib` / `torch` khi chạy `run_datagen_preset.py` trên Colab hoặc máy local. |
 | 2026-04-18 | Repo track `data/` trên Git (Stage A experiment + smoke + rgb_spotcheck); §2 / §9 cập nhật gợi ý clone thay vì chỉ upload tay. |
+| 2026-04-19 | Notebook chuyển vào `notebooks/`; Stage A train vào `PointPillars_module/training/`; cây thư mục §4 cập nhật. |
 
 ---
 

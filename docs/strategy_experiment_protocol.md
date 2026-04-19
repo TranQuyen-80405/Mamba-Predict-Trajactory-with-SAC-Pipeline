@@ -43,7 +43,7 @@ Compressed `.npz` + metadata: typically **~0.2–0.5 GiB** total tree — suitab
 python run_datagen_preset.py experiment
 ```
 
-(Preset defined in repo root `run_datagen_preset.py`.)
+(Preset implementation: `scripts/datagen/run_datagen_preset.py`; wrapper tại root giữ nguyên lệnh trên.)
 
 ### 2.2 When you need even smaller
 

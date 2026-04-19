@@ -135,7 +135,7 @@ Smoke configs (`verify`, `run_generate_small`, preset `smoke_nb`) only prove the
 
 2. **Positive ratios & policy mix** — read the `DataGenerator` summary at the end of `run()`. Aim for **positive(1s) roughly in the ~10–15% band** (adjust `policy_random_p` / `policy_scripted_p` / `policy_adversarial_p` until the WARN goes away or ratios sit in your target band). Too few positives → model never learns risk; too many → biased “always danger”. Optional **`policy_stationary_p`** (must still sum to 1.0 with the other three) runs `StationaryPolicy` (v=w=0) so **dynamic obstacles** can still create contacts — see `docs/strategy_create_trajectory_label.md` §9.
 
-3. **Optional RGB spot-checks** — run the **Spot-check RGB** cells at the bottom of `Create_dataset.ipynb` (preset `rgb_spotcheck` via `run_datagen_preset.py`, then display frames), or set `save_rgb=True` manually for a few short rollouts. Turn `save_rgb` off again for the full training dataset (RGB ~80% of bytes).
+3. **Optional RGB spot-checks** — run the **Spot-check RGB** cells at the bottom of `notebooks/Create_dataset.ipynb` (preset `rgb_spotcheck` via `run_datagen_preset.py`, then display frames), or set `save_rgb=True` manually for a few short rollouts. Turn `save_rgb` off again for the full training dataset (RGB ~80% of bytes).
 
 4. **Splits** — use `scene_stratified_split` so train / val / test do not share the same obstacle layout.
 
@@ -196,7 +196,7 @@ loader = DataLoader(
 
 2. Upload `Pipeline_stage_a.zip` to Colab.
 
-3. Open `create_dataset_module/colab_quickstart.ipynb` in Colab and run the
+3. Open `notebooks/colab_quickstart_create_dataset.ipynb` in Colab and run the
    first cell; it will unzip, install deps, run the tests, and hand you a
    ready-to-train `RiskDataset`.
 

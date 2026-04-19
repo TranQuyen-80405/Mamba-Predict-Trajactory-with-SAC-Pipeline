@@ -114,6 +114,18 @@ def _default_preprocess_cfg() -> DepthPreprocessConfig:
     )
 
 
+def bev_cache_relpath(traj_relpath: str, frame_idx: int) -> str:
+    """
+    Stable cache key for one BEV frame.
+
+    Example:
+        traj_relpath="s0001_r0002.npz", frame_idx=7
+        -> "s0001_r0002/f000007.pt"
+    """
+    stem = Path(traj_relpath).stem
+    return str(Path(stem) / f"f{int(frame_idx):06d}.pt")
+
+
 class RiskDataset(Dataset):
     """
     One item per (rollout_file, frame_t) pair.
@@ -137,6 +149,7 @@ class RiskDataset(Dataset):
         scene_filter: Optional[Sequence[int]] = None,
         extrinsics_convention: str = "identity",
         traj_horizon: int = 10,
+        bev_cache_root: Optional[str] = None,
     ) -> None:
         self.root = Path(root)
         self.T_ctx = int(T_ctx)
@@ -146,12 +159,12 @@ class RiskDataset(Dataset):
         self.traj_horizon = int(traj_horizon)
         if self.traj_horizon < 1:
             raise ValueError("traj_horizon must be >= 1")
+        self.bev_cache_root = Path(bev_cache_root) if bev_cache_root else None
 
         # Horizon lookahead (frames). Defaults mirror § 5.1.
         self.h_05s = int(getattr(cfg, "horizon_05s_frames", 10)) if cfg else 10
         self.h_1s = int(getattr(cfg, "horizon_1s_frames", 20)) if cfg else 20
         self.h_2s = int(getattr(cfg, "horizon_2s_frames", 40)) if cfg else 40
-        self._max_horizon = max(self.h_05s, self.h_1s, self.h_2s)
 
         self._scene_filter = (
             set(int(s) for s in scene_filter) if scene_filter is not None else None
@@ -180,11 +193,15 @@ class RiskDataset(Dataset):
                 continue
             T = int(r["T"])
             t_lo = self.T_ctx - 1
-            # Need lookahead for risk labels and ego_state[t+1:t+1+H] for trajectory targets.
-            t_hi = min(T - self._max_horizon, T - self.traj_horizon)
-            for t in range(t_lo, max(t_lo, t_hi)):
+            # Include every frame that has a full trajectory target slice
+            # ``ego_state[t+1 : t+1+traj_horizon]`` (exclusive upper ``T - traj_horizon``).
+            # Longer risk horizons may be truncated near episode end; per-column
+            # ``risk_label_valid`` in ``__getitem__`` masks those out in focal_bce.
+            t_hi_excl = T - self.traj_horizon
+            for t in range(t_lo, max(t_lo, t_hi_excl)):
                 entries.append({
                     "path": str(self.root / r["path"]),
+                    "traj_relpath": str(r["path"]),
                     "scene_id": scene_id,
                     "rollout_id": int(r["rollout_id"]),
                     "t": int(t),
@@ -213,6 +230,24 @@ class RiskDataset(Dataset):
 
         pts_seq: List[torch.Tensor] = []
         for tau in range(t - T_ctx + 1, t + 1):
+            if self.bev_cache_root is not None:
+                rel = bev_cache_relpath(meta["traj_relpath"], tau)
+                bev_path = self.bev_cache_root / rel
+                if not bev_path.is_file():
+                    raise FileNotFoundError(
+                        f"BEV cache frame missing: {bev_path} "
+                        f"(traj={meta['traj_relpath']} tau={tau})"
+                    )
+                bev = torch.load(bev_path, map_location="cpu")
+                if not torch.is_tensor(bev):
+                    raise ValueError(f"invalid cached BEV object at {bev_path}")
+                if bev.ndim != 3:
+                    raise ValueError(
+                        f"cached BEV must be (C,H,W), got {tuple(bev.shape)} at {bev_path}"
+                    )
+                pts_seq.append(bev.float().contiguous())
+                continue
+
             depth_m = traj.depth[tau].astype(np.float32)
             R_tau = traj.cam_extr_R[tau].astype(np.float32)
             t_tau = traj.cam_extr_t[tau].astype(np.float32)
@@ -243,6 +278,16 @@ class RiskDataset(Dataset):
         H = self.traj_horizon
         fut = traj.ego_state[t + 1 : t + 1 + H, :].astype(np.float32)
         traj_future = fut[:, [0, 1, 5]].copy()
+        T = int(traj.T)
+        remain = T - t  # frames from t inclusive to end-1; lookahead [t : t+H) needs remain >= H
+        valid = torch.tensor(
+            [
+                1.0 if remain >= self.h_05s else 0.0,
+                1.0 if remain >= self.h_1s else 0.0,
+                1.0 if remain >= self.h_2s else 0.0,
+            ],
+            dtype=torch.float32,
+        )
         return RiskSample(
             pts_seq=pts_seq,
             action_seq=action_seq,
@@ -250,6 +295,7 @@ class RiskDataset(Dataset):
             risk_05s=torch.tensor(float(traj.risk_05s[t]), dtype=torch.float32),
             risk_1s=torch.tensor(float(traj.risk_1s[t]), dtype=torch.float32),
             risk_2s=torch.tensor(float(traj.risk_2s[t]), dtype=torch.float32),
+            risk_label_valid=valid,
             traj_future_xyyaw=torch.from_numpy(traj_future),
             scene_id=int(meta["scene_id"]),
             rollout_id=int(meta["rollout_id"]),
@@ -303,6 +349,7 @@ def collate_riskbatch(samples: Sequence[RiskSample]) -> RiskBatch:
     risk_05s = torch.stack([s.risk_05s for s in samples], dim=0)
     risk_1s = torch.stack([s.risk_1s for s in samples], dim=0)
     risk_2s = torch.stack([s.risk_2s for s in samples], dim=0)
+    risk_label_valid = torch.stack([s.risk_label_valid for s in samples], dim=0)
     traj_future_xyyaw = torch.stack([s.traj_future_xyyaw for s in samples], dim=0)
 
     return RiskBatch(
@@ -312,6 +359,7 @@ def collate_riskbatch(samples: Sequence[RiskSample]) -> RiskBatch:
         risk_05s=risk_05s,
         risk_1s=risk_1s,
         risk_2s=risk_2s,
+        risk_label_valid=risk_label_valid,
         traj_future_xyyaw=traj_future_xyyaw,
     )
 
@@ -320,4 +368,7 @@ __all__ = [
     "RiskDataset",
     "collate_riskbatch",
     "scene_stratified_split",
+    "bev_cache_relpath",
+    "_default_preprocess_cfg",
+    "_preprocess_depth_to_pts",
 ]

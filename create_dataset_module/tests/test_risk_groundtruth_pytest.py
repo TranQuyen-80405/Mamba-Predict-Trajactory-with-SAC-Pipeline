@@ -225,18 +225,31 @@ class TestLookaheadEdgeCases:
 class TestRiskDatasetShortTrajectory:
     """Dataset index may be empty but must not raise."""
 
-    def test_T_equal_margin_yields_single_or_empty_without_crash(self) -> None:
-        # T=50, T_ctx=10, max_horizon=40 -> t_hi=10, t_lo=9 -> range(9,10) -> one sample
+    def test_index_counts_full_traj_window(self) -> None:
+        # T=50, T_ctx=10, traj=10 -> t_hi_excl=40, t_lo=9 -> range(9,40) length 31
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             _write_index_and_npz(root, T=50)
             ds = RiskDataset(root=str(root), cfg=DataGenConfig(), T_ctx=10)
-            assert len(ds) == 1
+            assert len(ds) == 31
             _ = ds[0]
 
     def test_T_below_threshold_empty_dataset(self) -> None:
+        # Need T - traj_horizon <= T_ctx - 1 with traj=10, T_ctx=10 => T <= 19
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            _write_index_and_npz(root, T=45)
+            _write_index_and_npz(root, T=19)
             ds = RiskDataset(root=str(root), cfg=DataGenConfig(), T_ctx=10)
             assert len(ds) == 0
+
+    def test_per_horizon_valid_mask_zeros_long_horizon(self) -> None:
+        """Near episode end, 2s horizon may be masked while traj target still valid."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_index_and_npz(root, T=30)
+            ds = RiskDataset(root=str(root), cfg=DataGenConfig(), T_ctx=10, traj_horizon=10)
+            assert len(ds) > 0
+            sample = ds[-1]
+            assert sample.risk_label_valid[0].item() == 1.0  # 0.5s fits in remain=11
+            assert sample.risk_label_valid[1].item() == 0.0  # 1s needs 20 frames ahead
+            assert sample.risk_label_valid[2].item() == 0.0

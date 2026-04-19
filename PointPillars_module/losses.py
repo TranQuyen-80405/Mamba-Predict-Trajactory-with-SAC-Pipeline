@@ -1,12 +1,13 @@
 """
 Stage A losses.
 
-focal_bce(logits, targets, gamma=2.0, weight=(1.0, 0.8, 0.5))
+focal_bce(logits, targets, gamma=2.0, weight=(1.0, 0.8, 0.5), valid_mask=None)
     Focal binary cross-entropy (§ 5.3 of docs/strategy_full_pipeline.md).
     * logits  : (B, K) raw outputs (no sigmoid).
     * targets : (B, K) float in {0, 1}.
     * gamma   : focusing parameter; gamma=0 recovers vanilla BCEWithLogits.
-    * weight  : per-horizon scalar weights, length K.
+    * weight  : per-horizon scalar weights, length K ([0.5s, 1s, 2s]).
+    * valid_mask : optional (B, K) in {{0,1}}; zeros excluded from the mean.
 
 oversample_positive_indices(risk_1s, factor=10)
     Sampler helper: indices list with positives duplicated ``factor`` times.
@@ -29,6 +30,7 @@ def focal_bce(
     targets: torch.Tensor,
     gamma: float = 2.0,
     weight: Optional[Sequence[float]] = (1.0, 0.8, 0.5),
+    valid_mask: Optional[torch.Tensor] = None,
     reduction: str = "mean",
 ) -> torch.Tensor:
     """
@@ -38,6 +40,8 @@ def focal_bce(
         focal = -(1 - p_t)**gamma * log(p_t)
 
     With ``weight`` applied as a scalar multiplier per horizon column.
+    If ``valid_mask`` is (B, K) with values in {0, 1}, masked elements are
+    omitted from the mean (truncated-lookahead frames / per-horizon drops).
     """
     if logits.shape != targets.shape:
         raise ValueError(
@@ -64,6 +68,23 @@ def focal_bce(
                 f"{focal.shape[-1]} of logits."
             )
         focal = focal * w
+
+    if valid_mask is not None:
+        vm = valid_mask.to(dtype=focal.dtype, device=focal.device)
+        if vm.shape != focal.shape:
+            raise ValueError(
+                f"valid_mask shape {tuple(vm.shape)} must match logits "
+                f"{tuple(focal.shape)}."
+            )
+        focal = focal * vm
+        if reduction == "mean":
+            denom = vm.sum().clamp_min(1.0)
+            return focal.sum() / denom
+        if reduction == "sum":
+            return focal.sum()
+        if reduction == "none":
+            return focal
+        raise ValueError(f"unknown reduction: {reduction}")
 
     if reduction == "mean":
         return focal.mean()

@@ -237,6 +237,7 @@ class TestRiskSampleAndBatch(unittest.TestCase):
             risk_05s=torch.tensor(0.0, dtype=torch.float32),
             risk_1s=torch.tensor(1.0, dtype=torch.float32),
             risk_2s=torch.tensor(1.0, dtype=torch.float32),
+            risk_label_valid=torch.ones(3, dtype=torch.float32),
             traj_future_xyyaw=torch.zeros(H, 3, dtype=torch.float32),
             scene_id=0, rollout_id=0, frame_t=7,
         )
@@ -260,12 +261,14 @@ class TestRiskSampleAndBatch(unittest.TestCase):
         risk_05s = torch.stack([s.risk_05s for s in samples], dim=0)
         risk_1s = torch.stack([s.risk_1s for s in samples], dim=0)
         risk_2s = torch.stack([s.risk_2s for s in samples], dim=0)
+        risk_label_valid = torch.stack([s.risk_label_valid for s in samples], dim=0)
         traj_future_xyyaw = torch.stack([s.traj_future_xyyaw for s in samples], dim=0)
 
         batch = RiskBatch(
             pts_seq=pts_seq,
             action_seq=action_seq, ego_vel_seq=ego_vel_seq,
             risk_05s=risk_05s, risk_1s=risk_1s, risk_2s=risk_2s,
+            risk_label_valid=risk_label_valid,
             traj_future_xyyaw=traj_future_xyyaw,
         )
 

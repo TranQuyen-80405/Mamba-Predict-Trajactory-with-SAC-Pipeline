@@ -98,7 +98,14 @@ PointPillars_module/
 │   └── full_pipeline_risk_traj.py # FullPipeline + TrajectoryHead; forward → (risk_logits, traj)
 ├── dataset_generator.py          # PyBullet offline rollouts → .npz per rollout
 ├── risk_dataset.py               # torch Dataset + collate_fn (per-time-step list batching)
-├── train_stage_a_compare.py      # compare backbones: risk AP/AUC + traj ADE/FDE (Colab-friendly)
+├── training/                     # Stage A CLI + shared loop (TB, metrics.jsonl, checkpoints)
+│   ├── stage_a_single_run.py
+│   ├── train_stage_a_mamba.py
+│   ├── train_stage_a_rnn_gru.py
+│   ├── train_stage_a_lstm.py
+│   ├── train_stage_a_transformer.py
+│   └── train_stage_a_compare.py
+├── train_stage_a_compare.py      # shim re-export (notebooks: from train_stage_a_compare import …)
 ├── train_stage_a.py              # placeholder for unified A1/A2 trainer
 ├── train_stage_b_sac.py          # SAC Actor/Critic reference (proprio-only), clamps, Polyak helper
 ├── utils/

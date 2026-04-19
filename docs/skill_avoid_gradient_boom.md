@@ -187,10 +187,10 @@ When forming \(\sigma = \exp(\log\_std)\), use **`std = sigma.clamp_min(eps)`** 
 | Focal loss + \(\varepsilon\)-safe \(p_t\) | `PointPillars_module/losses.py` |
 | He init for reducer convs | `PointPillars_module/models/spatial_reducer.py` |
 | Grad norms / logging helpers | `PointPillars_module/utils/gradient_health.py` |
-| Stage A compare train + epoch grad stats | `PointPillars_module/train_stage_a_compare.py` |
+| Stage A compare train + epoch grad stats | `PointPillars_module/training/train_stage_a_compare.py` |
 | SAC Actor/Critic reference + clamps + separate clips | `PointPillars_module/train_stage_b_sac.py` |
 
-*Note:* Full `train_stage_a.py` may be added later; Stage A comparison training currently lives in `train_stage_a_compare.py`.
+*Note:* Full `train_stage_a.py` may be added later; Stage A comparison training lives in `training/train_stage_a_compare.py` (also importable as `train_stage_a_compare` when `PointPillars_module` is on `sys.path`).
 
 ---
 

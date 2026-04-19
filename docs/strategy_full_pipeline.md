@@ -268,6 +268,7 @@ class RiskSample:
     risk_05s:     torch.Tensor        # () float32, binary
     risk_1s:      torch.Tensor        # () float32, binary
     risk_2s:      torch.Tensor        # () float32, binary
+    risk_label_valid: torch.Tensor    # (3,) float32 in {0,1} — per-horizon mask for focal loss
     traj_future_xyyaw: torch.Tensor   # (H, 3) float32 — planar future ego poses
                                       # (x, y, yaw world) for frames t+1..t+H
 
@@ -296,10 +297,11 @@ class RiskBatch:
     risk_05s:     torch.Tensor               # (B,) float32
     risk_1s:      torch.Tensor               # (B,) float32
     risk_2s:      torch.Tensor               # (B,) float32
+    risk_label_valid: torch.Tensor          # (B, 3) float32 in {0,1}
     traj_future_xyyaw: torch.Tensor          # (B, H, 3) float32 — same semantics as §3.2
 ```
 
-`H` defaults to `10` frames (0.5 s @ 20 Hz). Used by `train_stage_a_compare` for joint risk + short-horizon trajectory supervision (`FullPipelineRiskAndTraj`); Stage B streaming still consumes risk only via `FullPipeline.step`.
+`RiskDataset` indexes frames with a full trajectory-supervision slice; per-horizon columns of `risk_label_valid` are set when `T - t` is at least the lookahead length for that horizon (so near episode end, longer horizons can be masked out while shorter ones remain). `H` defaults to `10` frames (0.5 s @ 20 Hz). Used by `train_stage_a_compare` for joint risk + short-horizon trajectory supervision (`FullPipelineRiskAndTraj`); Stage B streaming still consumes risk only via `FullPipeline.step`.
 
 ### 3.4 Network intermediate tensors
 
@@ -508,8 +510,11 @@ for t in range(T):
 
 ```
 PointPillars_module/
-├── dataset_generator.py         # NEW, offline PyBullet rollout
-├── risk_dataset.py              # NEW, torch Dataset + collate_fn
+├── training/                    # Stage A trainers (CLI) + shared training loop
+│   ├── train_stage_a_compare.py
+│   ├── stage_a_single_run.py
+│   └── train_stage_a_{mamba,rnn_gru,lstm,transformer}.py
+├── train_stage_a_compare.py     # shim → re-exports training.train_stage_a_compare
 ├── models/
 │   ├── spatial_reducer.py       # NEW
 │   ├── mamba_temporal.py        # NEW
@@ -517,12 +522,11 @@ PointPillars_module/
 │   ├── temporal_factory.py      # NEW, build_temporal(kind)
 │   ├── risk_head.py             # NEW
 │   └── full_pipeline.py         # NEW, nn.Module that wires everything
-├── train_stage_a_compare.py     # NEW, matched-split compare + TensorBoard
-├── train_stage_a.py             # NEW
+├── train_stage_a.py             # placeholder / future A1+A2 unified trainer
 ├── train_stage_b_sac.py         # NEW
 ├── utils/
 │   └── metrics.py               # NEW, AUC / Brier / calibration
-└── (existing module_pointpillar.py, pointpillars/, setup.py, ...)
+└── (existing module_pointpillar.py, pointpillars/, setup.py, …)
 ```
 
 **Pseudo-training step (Stage A):**
@@ -549,15 +553,20 @@ for batch in loader:                         # batch: RiskBatch
 ### 5.3 Loss
 
 ```python
-def focal_bce(logits, targets, gamma=2.0, weight=(1.0, 0.8, 0.5)):
-    # logits, targets: (B, 3)
-    p  = torch.sigmoid(logits)
+def focal_bce(logits, targets, gamma=2.0, weight=(1.0, 0.8, 0.5), valid_mask=None):
+    # logits, targets: (B, 3); optional valid_mask (B,3) in {0,1}
     bce = F.binary_cross_entropy_with_logits(logits, targets, reduction='none')
-    pt  = targets * p + (1 - targets) * (1 - p)
-    loss = ((1 - pt) ** gamma) * bce                 # (B, 3)
-    w = torch.tensor(weight, device=logits.device)   # (3,)
-    return (loss * w).mean()
+    pt = torch.exp(-bce)  # p_t
+    focal = ((1 - pt) ** gamma) * bce
+    w = torch.tensor(weight, device=logits.device).view(1, 3)
+    focal = focal * w
+    if valid_mask is not None:
+        focal = focal * valid_mask
+        return focal.sum() / valid_mask.sum().clamp_min(1.0)
+    return focal.mean()
 ```
+
+Implementation: `PointPillars_module/losses.py`.
 
 ### 5.4 Sub-stages
 
@@ -565,7 +574,8 @@ def focal_bce(logits, targets, gamma=2.0, weight=(1.0, 0.8, 0.5)):
 - PointPillars: **frozen** (load KITTI weights via `module_pointpillar.PointPillarsNeckExtractor`).
 - Trainable: `SpatialReducer`, `Mamba`, `RiskHead`.
 - Optimizer: AdamW, `lr = 3e-4`, `weight_decay = 1e-4`.
-- Scheduler: cosine, warmup 500 iter.
+- Scheduler (implemented in `training/stage_a_single_run.py`): **linear LR warmup for 500 optimizer steps**, then **cosine decay** to `eta_min` over the remaining optimizer steps in the run (not per-epoch cosine on epoch count).
+- Defaults for backbone comparison: `T_ctx = 40` (2.0 s @ 20 Hz), `batch_size = 32`, `gradient_accumulation_steps = 2` (effective batch 64), `epochs = 20`, early stopping on `val ap_risk_1s` with patience 5.
 - Batch: 32 (T4) / 64 (A100).
 
 **A2 — neck unfreeze (5 epochs):**
@@ -1078,6 +1088,10 @@ If any hit is NOT a deliberate historical note, fix before merging.
 | 2026-04-18 | v3.7   | **Stage A compare — joint trajectory + risk.** `RiskSample` / `RiskBatch` gain `traj_future_xyyaw` (`H×(x,y,yaw)` world poses after frame `t`). `RiskDataset` exposes `traj_horizon` (default `H=10`). `FullPipeline.forward_to_h_T` refactors encoding; new `TrajectoryHead` + `FullPipelineRiskAndTraj` predict the same `H` poses from `h_T`. `train_stage_a_compare` trains focal-BCE (risk) + SmoothL1 (trajectory) and reports validation **risk** AP/AUC (three horizons) plus **trajectory** RMSE (all dims), ADE/FDE in XY (m), RMSE yaw (rad). Stage B default path unchanged (`FullPipeline.step` = risk only). §3.2 / §3.3 updated. |
 | 2026-04-18 | v3.7.1 | **Dataset-gen dependency hygiene.** Added `create_dataset_module/requirements.txt` (includes `-r env/requirements.txt` for PyBullet + NumPy + Matplotlib, plus `torch` because `create_dataset_module` re-exports `RiskDataset`). Mirrored `matplotlib` in §7 recommended stack table. Updated `docs/colab_stage_a_compare_checklist.md` §1 with the one-liner install command. |
 | 2026-04-18 | v3.7.2 | **Stage A sample datasets in git.** Removed root `.gitignore` blanket ignore of `data/`; repository now tracks `data/stage_a_experiment`, `data/stage_a_smoke`, `data/stage_a_smoke_nb`, `data/stage_a_rgb_spotcheck` (~312 MB) for Colab clone-and-run. Checkpoint `PointPillars_module/pretrained/*.pth` remains tracked per prior policy. |
+| 2026-04-19 | —      | Repo layout: Stage A training scripts moved under `PointPillars_module/training/` with a thin `train_stage_a_compare.py` shim at package root for notebook imports; §5 file layout block updated. |
+| 2026-04-19 | v3.8   | **Stage A training / dataset alignment.** `RiskDataset` index uses `t + H_max ≤ T` (and matching trajectory slice bounds) so truncated end-of-rollout frames are **excluded** from training, removing “false safe” bias. `RiskSample` / `RiskBatch` add `risk_label_valid` (typically all-ones) for masked `focal_bce`. Trainer: linear warmup **500 optimizer steps** then cosine to `eta_min`; horizon weights `(1.0, 0.8, 0.5)`; defaults `T_ctx=40`, batch `32`× accum `2`; TensorBoard logs total trainable params, per-step LR, `ap_risk_05s`; `utils/mamba_runtime.py` logs Mamba vs GRU resolution. §3.2–3.3, §5.3–5.4 updated. |
+| 2026-04-19 | v3.9   | **Per-horizon truncation masks.** `RiskDataset` indexes all frames with full trajectory supervision; `risk_label_valid` is computed from `T - t` vs each horizon length so `focal_bce` ignores horizons without full lookahead. Validation AP/AUC use the same mask. Training logs raw vs masked batch positive rates; TensorBoard `train/global_grad_norm_*`; headline param count = temporal backbone only. `full_pipeline.forward_to_h_T` documents `extract_neck_forward` + frozen PP. |
+| 2026-04-19 | v4.0   | **Stage A BEV cache path implemented for fair temporal ablations.** Added `scripts/cache_pointpillars_bev.py` to precompute frozen PointPillars neck features per `(trajectory, frame)`. `RiskDataset(bev_cache_root=...)` now loads cached `(C,H,W)` BEV frames (or falls back to depth→points). `FullPipeline.forward_to_h_T` auto-detects cached BEV vs raw points at runtime, so `train_stage_a_compare.py --bev_cache_root ...` trains Mamba/GRU/LSTM/Transformer on identical cached inputs without rerunning PointPillars each epoch. |
 
 ---
 
