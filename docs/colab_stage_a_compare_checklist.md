@@ -28,7 +28,7 @@ Notebook mặc định: `DATA_ROOT = <REPO>/data/stage_a_experiment`.
   python run_datagen_preset.py experiment
   ```
 
-- [ ] Sau khi xong, thư mục **`data/stage_a_experiment/`** phải tồn tại và có **`index.jsonl`** cùng các file rollout (`.npz` theo generator — contract Stage A: trajectory + nhãn risk).
+- [ ] Sau khi xong, thư mục **`data/stage_a_experiment/`** phải tồn tại và có **`index.jsonl`** cùng các file rollout (`.npz` theo generator — contract Stage A: trajectory + nhãn risk). **Git:** repo đã track `data/` (kèm smoke / rgb_spotcheck) — sau `git clone` có thể dùng luôn; chỉ cần chạy bước trên nếu bạn muốn tạo lại hoặc đổi preset.
 - [ ] **Không** dùng nhầm:
   - `data/stage_a_smoke_nb` (preset `smoke_nb`)
   - `data/stage_a_full` (preset `full`) — trừ khi bạn **đổi** `DATA_ROOT` trong notebook cho khớp.
@@ -98,11 +98,10 @@ Pipeline/
 
 ---
 
-## 6. Trên Colab — thao tác runtime
+## 6. Trên Colab / Linux — thao tác runtime
 
-- [ ] **Runtime → Change runtime type → GPU** (T4 hoặc tương đương).
-- [ ] Chạy cell cài `torch` (notebook dùng wheel `cu124`; nếu báo lỗi không tương thích CUDA Colab, đổi sang `cu121` trong URL theo comment notebook).
-- [ ] `mamba-ssm`: nếu build lỗi, notebook vẫn có thể chạy backbone khác (GRU/LSTM/Transformer); xem log `train_stage_a_compare` / `mamba_backend`.
+- [ ] **Runtime → Change runtime type → GPU** (T4 hoặc tương đương) nếu dùng Colab.
+- [ ] Cell đầu notebook cài PyTorch CUDA (thử `cu124` / `cu121` / `cu118`) rồi `mamba-ssm[causal-conv1d]` (Linux). Trên **Windows native**, cell sẽ báo lỗi có hướng dẫn: dùng **Colab** hoặc **WSL2 Ubuntu** — `mamba-ssm` upstream là **Unix + CUDA**, không có wheel ổn định cho Windows.
 
 ---
 
@@ -137,10 +136,11 @@ print("OK: data + checkpoint paths")
 
 | Triệu chứng | Hướng xử lý |
 |-------------|-------------|
-| `Thiếu data: .../stage_a_experiment` | Chạy lại `run_datagen_preset.py experiment` trên local rồi upload `data/stage_a_experiment`, hoặc chạy script đó trên Colab nếu đủ PyBullet. |
+| `Thiếu data: .../stage_a_experiment` | `git pull` / clone lại repo (data đã có trên remote), hoặc chạy `run_datagen_preset.py experiment` rồi commit — hoặc upload thư mục `data/stage_a_experiment` lên Drive/Colab. |
 | `Thiếu checkpoint trong .../pretrained` | Copy `epoch_160.pt` hoặc `.pth` vào đúng `PointPillars_module/pretrained/`. |
 | Lỗi import `train_stage_a_compare` | `os.chdir(REPO_ROOT)` và `sys.path` phải chứa `PointPillars_module` — đúng như cell notebook; kiểm tra đang ở đúng thư mục repo. |
 | CUDA / wheel PyTorch | Đổi index `cu124` ↔ `cu121`; hoặc dùng torch có sẵn của Colab rồi chỉ `pip install` các gói còn thiếu. |
+| `causal-conv1d` / `mamba-ssm` fail trên Windows | Chạy notebook trên **Colab GPU** hoặc **WSL2 Linux**; không expect pip build thành công trên Windows native. |
 
 ---
 
@@ -157,6 +157,7 @@ print("OK: data + checkpoint paths")
 | Date       | Change |
 |------------|--------|
 | 2026-04-18 | §1: thêm lệnh `pip install -r create_dataset_module/requirements.txt` để tránh thiếu `pybullet` / `matplotlib` / `torch` khi chạy `run_datagen_preset.py` trên Colab hoặc máy local. |
+| 2026-04-18 | Repo track `data/` trên Git (Stage A experiment + smoke + rgb_spotcheck); §2 / §9 cập nhật gợi ý clone thay vì chỉ upload tay. |
 
 ---
 
