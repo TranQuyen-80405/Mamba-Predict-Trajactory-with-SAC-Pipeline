@@ -43,5 +43,6 @@ jobs:
           # Override if you want larger/smaller sample in CI
           RISK_LABEL_TEST_MAX_FILES: "8"
           RISK_LABEL_TEST_SEED: "13"
+          PYTHONPATH: ${{ github.workspace }}
         run: |
-          pytest tests/test_risk_labels.py -q -rA
+          python -m pytest tests/test_risk_labels.py -q -rA
