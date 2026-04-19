@@ -15,6 +15,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .ipynb_checkpoints/
+*.executed.ipynb
 
 # ── Editors / IDE ──────────────────────────────────────────────────────
 .vscode/
@@ -27,9 +28,7 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
-# ── Generated datasets (regenerate via Create_dataset.ipynb) ───────────
-data/*
-!data/.gitkeep
+# ── Stage A datasets (`data/`) are tracked in git for Colab clone-and-run.
 
 # ── Runtime / logs / checkpoints produced by training ──────────────────
 runs/
