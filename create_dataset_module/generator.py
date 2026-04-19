@@ -36,9 +36,11 @@ for _p in (_ROOT, _PP_PKG):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from data_contracts import (  # noqa: E402
+from PointPillars_module.types import (  # noqa: E402
     DataGenConfig,
     Trajectory,
+)
+from data_contracts import (  # noqa: E402
     dump_index_row,
 )
 

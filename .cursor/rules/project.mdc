@@ -186,6 +186,9 @@ Only promote S1 → S2 after the A/B test has been measured AND the frozen risk 
 
 - **Python ≥ 3.10**, **PyTorch ≥ 2.1**, **mamba-ssm 1.2.x** (fallback `nn.GRU(D, D, 2, batch_first=True)` if build fails).
 - Prefer `@dataclass` for config / contract objects. Type-hint everything at function boundaries.
+- Keep `PointPillars_module/types.py` synchronized with all pipeline dataclasses:
+  whenever a dataclass is added/removed/renamed in `PointPillars_module/`,
+  update the re-exports and `__all__` in `types.py` in the same change.
 - All arrays on disk: NumPy `float32` (depth `float16` ok). All in-memory model tensors: `float32` contiguous on `cuda` (except the replay buffer, which stays on CPU).
 - Do **not** add redundant comments narrating code (no `# return result`, `# import module`). Comments should explain non-obvious intent or trade-offs (e.g. why we scale points by 5×).
 - English for all identifiers, docstrings, and comments (docs are in English too).

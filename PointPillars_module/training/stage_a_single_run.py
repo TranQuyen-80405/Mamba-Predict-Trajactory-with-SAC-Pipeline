@@ -39,10 +39,11 @@ for _p in (_PKG_ROOT, _REPO_ROOT, _REPO_ROOT / "create_dataset_module"):
         sys.path.insert(0, s)
 
 from losses import focal_bce  # noqa: E402
-from module_pointpillar import PointPillarsConfig, PointPillarsNeckExtractor  # noqa: E402
+from module_pointpillar import PointPillarsNeckExtractor  # noqa: E402
 from models.full_pipeline_risk_traj import FullPipelineRiskAndTraj  # noqa: E402
 from models.temporal_factory import build_temporal  # noqa: E402
 from risk_dataset import RiskDataset, collate_riskbatch, scene_stratified_split  # noqa: E402
+from PointPillars_module.types import PointPillarsConfig  # noqa: E402
 from utils.gradient_health import grad_norm_l2, max_grad_value  # noqa: E402
 from utils.mamba_runtime import log_mamba_temporal_runtime  # noqa: E402
 
@@ -181,6 +182,32 @@ def collect_val_metrics(
             valid_all.append(batch.risk_label_valid.float().cpu())
             traj_pred_all.append(traj_pred.cpu())
             traj_gt_all.append(batch.traj_future_xyyaw.float())
+
+    if not logits_all:
+        # Validation split can be empty after scene split + window filtering
+        # (large T_ctx / traj_horizon on tiny datasets). Return NaNs instead
+        # of crashing on torch.cat([]) so the run still writes artifacts.
+        out_empty: Dict[str, float] = {
+            "traj_rmse_all": float("nan"),
+            "traj_ade_xy_m": float("nan"),
+            "traj_fde_xy_m": float("nan"),
+            "traj_rmse_yaw_rad": float("nan"),
+            "ap_risk_05s": float("nan"),
+            "auc_risk_05s": float("nan"),
+            "ap_risk_1s": float("nan"),
+            "auc_risk_1s": float("nan"),
+            "ap_risk_2s": float("nan"),
+            "auc_risk_2s": float("nan"),
+            "val_sample_count": 0.0,
+        }
+        if measure_inference_latency:
+            out_empty["val_inference_ms_per_sample"] = float("nan")
+        print(
+            "[collect_val_metrics] Warning: validation loader produced 0 batches; "
+            "returning NaN metrics.",
+            flush=True,
+        )
+        return out_empty
 
     logits_cat = torch.cat(logits_all, dim=0).numpy()
     t_cat = torch.cat(t_all, dim=0).numpy()
@@ -325,6 +352,8 @@ def run_stage_a_training(
         scene_filter=tr_s,
         traj_horizon=traj_horizon,
         bev_cache_root=bev_cache_root,
+        include_action_seq=False,
+        include_ego_vel_seq=False,
     )
     val_ds = RiskDataset(
         str(data_path),
@@ -332,6 +361,8 @@ def run_stage_a_training(
         scene_filter=va_s,
         traj_horizon=traj_horizon,
         bev_cache_root=bev_cache_root,
+        include_action_seq=False,
+        include_ego_vel_seq=False,
     )
 
     w_arr = train_ds.risk_1s_array()
@@ -343,6 +374,11 @@ def run_stage_a_training(
         weights, num_samples=len(train_ds), replacement=True
     )
 
+    _dl_kwargs: Dict[str, Any] = {}
+    if num_workers > 0:
+        _dl_kwargs["persistent_workers"] = True
+        _dl_kwargs["prefetch_factor"] = 2
+
     train_loader = DataLoader(
         train_ds,
         batch_size=batch_size,
@@ -350,6 +386,7 @@ def run_stage_a_training(
         num_workers=num_workers,
         collate_fn=collate_riskbatch,
         pin_memory=(dev.type == "cuda"),
+        **_dl_kwargs,
     )
     val_loader = DataLoader(
         val_ds,
@@ -358,6 +395,7 @@ def run_stage_a_training(
         num_workers=num_workers,
         collate_fn=collate_riskbatch,
         pin_memory=(dev.type == "cuda"),
+        **_dl_kwargs,
     )
 
     rn = run_name or (

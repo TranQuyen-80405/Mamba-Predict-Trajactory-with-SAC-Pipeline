@@ -136,6 +136,23 @@ class TestMambaTemporalSSM(unittest.TestCase):
         self.assertEqual(out1.shape, (2, 16, 256))
         self.assertTrue(torch.allclose(out1, out2))
 
+    def test_step_carries_temporal_state(self):
+        torch.manual_seed(0)
+        model = MambaTemporal(
+            d_model=128, n_blocks=2, backend="mamba"
+        ).cuda().eval()
+        B = 2
+        t0 = torch.randn(B, 128, device="cuda")
+        t1 = torch.randn(B, 128, device="cuda")
+        with torch.no_grad():
+            h0, st = model.step(t0, None)
+            h1, st = model.step(t1, st)
+            h1_fresh, _ = model.step(t1, None)
+        self.assertEqual(h0.shape, (B, 128))
+        self.assertEqual(h1.shape, (B, 128))
+        # With carried state, output at t1 should differ from cold-start t1.
+        self.assertFalse(torch.allclose(h1, h1_fresh))
+
 
 # =====================================================================
 # RiskHead

@@ -25,7 +25,7 @@ for _p in (_ROOT, _PP_PKG):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from data_contracts import DataGenConfig, Trajectory  # noqa: E402
+from PointPillars_module.types import DataGenConfig, Trajectory  # noqa: E402
 from create_dataset_module.risk_dataset import (  # noqa: E402
     RiskDataset,
     collate_riskbatch,
@@ -82,8 +82,9 @@ class TestRiskDataset(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             _write_fixture(Path(tmp), n_scenes=1, T=60)
             ds = RiskDataset(root=tmp, cfg=DataGenConfig(), T_ctx=10)
-            # valid frames: [9, 19) (since max_horizon=40 and T=60).
-            self.assertEqual(len(ds), 60 - 40 - (10 - 1))
+            # valid frames are bounded by trajectory target horizon:
+            # t in [T_ctx-1, T-traj_horizon) => [9, 50) for T=60, H=10.
+            self.assertEqual(len(ds), 60 - 10 - (10 - 1))
             sample = ds[0]
             self.assertEqual(len(sample.pts_seq), 10)
             for pts in sample.pts_seq:

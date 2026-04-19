@@ -44,7 +44,7 @@ for _p in (_ROOT, _PP_PKG):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from data_contracts import DataGenConfig  # noqa: E402
+from PointPillars_module.types import DataGenConfig  # noqa: E402
 
 from .generator import DataGenerator  # noqa: E402
 from .risk_dataset import RiskDataset, collate_riskbatch  # noqa: E402
@@ -129,7 +129,8 @@ def _stage_full_pipeline(tmp_dir: Path, batch_size: int) -> bool:
         return False
 
     try:
-        from module_pointpillar import PointPillarsConfig, PointPillarsNeckExtractor
+        from PointPillars_module.types import PointPillarsConfig
+        from module_pointpillar import PointPillarsNeckExtractor
         from models.full_pipeline import FullPipeline
     except Exception as exc:  # pragma: no cover
         print(f"  [SKIP] PointPillars imports failed: {exc}")

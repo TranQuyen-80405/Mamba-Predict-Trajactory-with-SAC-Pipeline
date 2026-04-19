@@ -20,6 +20,6 @@ if _PP_PKG not in sys.path:
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
-from data_contracts import DataGenConfig, EnvConfig  # noqa: E402
+from PointPillars_module.types import DataGenConfig, EnvConfig  # noqa: E402
 
 __all__ = ["DataGenConfig", "EnvConfig"]

@@ -20,7 +20,7 @@ for _p in (_ROOT, _PP_PKG):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from data_contracts import Trajectory  # noqa: E402
+from PointPillars_module.types import Trajectory  # noqa: E402
 
 
 class TestRoundtrip(unittest.TestCase):

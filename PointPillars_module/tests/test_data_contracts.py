@@ -24,7 +24,7 @@ _PKG_ROOT = os.path.dirname(_HERE)
 if _PKG_ROOT not in sys.path:
     sys.path.insert(0, _PKG_ROOT)
 
-from data_contracts import (  # noqa: E402
+from PointPillars_module.types import (  # noqa: E402
     DataGenConfig,
     EnvConfig,
     ProprioState,
@@ -32,6 +32,8 @@ from data_contracts import (  # noqa: E402
     RiskSample,
     Trajectory,
     Transition,
+)
+from data_contracts import (  # noqa: E402
     dump_index_row,
     proprio_dim_from_cfg,
     trajectory_field_names,

@@ -33,7 +33,7 @@ except Exception:
 class TestDataGeneratorSmoke(unittest.TestCase):
     def test_one_rollout_20_frames(self):
         from create_dataset_module.generator import DataGenerator
-        from data_contracts import DataGenConfig, Trajectory
+        from PointPillars_module.types import DataGenConfig, Trajectory
 
         with tempfile.TemporaryDirectory() as tmp:
             cfg = DataGenConfig(

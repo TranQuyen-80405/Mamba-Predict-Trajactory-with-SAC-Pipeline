@@ -32,7 +32,7 @@ except Exception:
 @unittest.skipUnless(_PYBULLET_OK, "pybullet / pybullet_navigation not available")
 class TestGeneratorFeatures(unittest.TestCase):
     def _cfg(self, tmp: str, **over):
-        from data_contracts import DataGenConfig
+        from PointPillars_module.types import DataGenConfig
         base = dict(
             n_scenes=1, rollouts_per_scene=1, frames_per_rollout=80,
             out_dir=tmp, seed=0,
@@ -57,7 +57,7 @@ class TestGeneratorFeatures(unittest.TestCase):
         ends at the contact frame with all arrays the same length.
         """
         from create_dataset_module.generator import DataGenerator
-        from data_contracts import Trajectory
+        from PointPillars_module.types import Trajectory
 
         with tempfile.TemporaryDirectory() as tmp:
             # Adversarial: robot drives at ~0.3-0.5 m/s once friction and
@@ -109,7 +109,7 @@ class TestGeneratorFeatures(unittest.TestCase):
     # ---------- save_rgb flag ----------
     def test_save_rgb_false_stores_placeholder(self):
         from create_dataset_module.generator import DataGenerator
-        from data_contracts import Trajectory
+        from PointPillars_module.types import Trajectory
 
         with tempfile.TemporaryDirectory() as tmp:
             cfg = self._cfg(tmp, save_rgb=False, frames_per_rollout=15,
@@ -127,7 +127,7 @@ class TestGeneratorFeatures(unittest.TestCase):
 
     def test_save_rgb_true_stores_frames(self):
         from create_dataset_module.generator import DataGenerator
-        from data_contracts import Trajectory
+        from PointPillars_module.types import Trajectory
 
         with tempfile.TemporaryDirectory() as tmp:
             cfg = self._cfg(tmp, save_rgb=True, frames_per_rollout=10,

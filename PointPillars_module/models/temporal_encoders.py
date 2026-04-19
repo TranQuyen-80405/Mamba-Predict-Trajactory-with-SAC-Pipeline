@@ -54,6 +54,12 @@ class LSTMTemporal(nn.Module):
                 f"step() expects (B, D={self.d_model}); got {tuple(tok_t.shape)}"
             )
         x = tok_t.unsqueeze(1)
+        if hidden is not None:
+            h, c = hidden
+            hidden = (
+                h.to(device=tok_t.device, dtype=tok_t.dtype),
+                c.to(device=tok_t.device, dtype=tok_t.dtype),
+            )
         out, new_hidden = self.lstm(x, hidden)
         return out.squeeze(1), new_hidden
 

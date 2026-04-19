@@ -1,5 +1,7 @@
 # ── Virtual environments ───────────────────────────────────────────────
 .venv/
+.venv-linux/
+.venv-linux-2404/
 venv/
 env_venv/
 ENV/

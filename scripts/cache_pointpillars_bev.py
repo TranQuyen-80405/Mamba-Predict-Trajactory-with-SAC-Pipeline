@@ -30,11 +30,13 @@ from create_dataset_module.risk_dataset import (  # noqa: E402
     _preprocess_depth_to_pts,
     bev_cache_relpath,
 )
-from data_contracts import Trajectory  # noqa: E402
-from module_pointpillar import (  # noqa: E402
+from PointPillars_module.types import (  # noqa: E402
     CameraToLidarExtrinsics,
     DepthCameraIntrinsics,
     PointPillarsConfig,
+    Trajectory,
+)
+from module_pointpillar import (  # noqa: E402
     PointPillarsNeckExtractor,
 )
 

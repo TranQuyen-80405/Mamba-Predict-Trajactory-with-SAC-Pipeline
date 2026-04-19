@@ -14,7 +14,6 @@ from __future__ import annotations
 import math
 import os
 import sys
-from dataclasses import dataclass
 from typing import Tuple
 
 import torch
@@ -24,7 +23,11 @@ import torch.nn.functional as F
 _PKG = os.path.dirname(os.path.abspath(__file__))
 if _PKG not in sys.path:
     sys.path.insert(0, _PKG)
+_ROOT = os.path.dirname(_PKG)
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
 
+from PointPillars_module.types import RewardNormalizer
 from utils.gradient_health import EPS, soft_update_polyak
 
 _HALF_LOG_2PI = 0.5 * math.log(2.0 * math.pi)
@@ -116,29 +119,6 @@ def clip_grad_critic(critic: TwinCritic, max_norm: float = 1.0) -> torch.Tensor:
 
 def clip_grad_alpha(log_alpha: torch.nn.Parameter, max_norm: float = 1.0) -> torch.Tensor:
     return torch.nn.utils.clip_grad_norm_([log_alpha], max_norm)
-
-
-@dataclass
-class RewardNormalizer:
-    """
-    Incremental reward scaling (EMA). Use on scalar rewards before TD targets if spikes occur.
-    y = (r - mean) / (std + eps). Call ``update`` each step from raw env + shaped reward.
-    """
-
-    momentum: float = 0.01
-    eps: float = 1e-8
-    mean: float = 0.0
-    var: float = 1.0
-
-    def update(self, r_batch: torch.Tensor) -> None:
-        r = float(r_batch.mean().detach().cpu())
-        self.mean = (1.0 - self.momentum) * self.mean + self.momentum * r
-        v = float(r_batch.var(unbiased=False).detach().cpu())
-        self.var = (1.0 - self.momentum) * self.var + self.momentum * max(v, self.eps)
-
-    def normalize(self, r: torch.Tensor) -> torch.Tensor:
-        std = (self.var + self.eps) ** 0.5
-        return (r - self.mean) / (std + self.eps)
 
 
 __all__ = [

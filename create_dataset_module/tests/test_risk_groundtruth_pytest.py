@@ -30,7 +30,7 @@ from create_dataset_module.risk_dataset import (  # noqa: E402
     RiskDataset,
     collate_riskbatch,
 )
-from data_contracts import DataGenConfig, Trajectory  # noqa: E402
+from PointPillars_module.types import DataGenConfig, Trajectory  # noqa: E402
 
 
 # ---------------------------------------------------------------------------

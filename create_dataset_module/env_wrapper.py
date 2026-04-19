@@ -154,11 +154,9 @@ class DatasetEnv:
         W, H = self.depth_hw
         fov_h_rad = float(np.deg2rad(self.fov_h_deg))
         fx = (W / 2.0) / float(np.tan(fov_h_rad / 2.0))
-        # Square pixel -> same focal for both axes (pybullet's FoV is vertical
-        # when passed through computeProjectionMatrixFOV; but RL_Env here
-        # passes ``fov`` as the y-axis FoV anyway and uses fx=fy=(W/2)/tan.
-        # Keep fy = fx for consistency with pybullet_navigation's unprojection.
-        fy = fx
+        # Keep square pixels: derive fy from fx and aspect ratio so non-square
+        # depth frames (e.g., 160x120) are not vertically warped.
+        fy = fx * (H / W)
         cx, cy = W / 2.0, H / 2.0
         return np.array([fx, fy, cx, cy], dtype=np.float32)
 

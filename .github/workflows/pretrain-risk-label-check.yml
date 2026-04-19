@@ -1,0 +1,47 @@
+name: Pre-Train Risk Label Check
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "tests/test_risk_labels.py"
+      - "create_dataset_module/**"
+      - "PointPillars_module/**"
+      - "data/stage_a_experiment/index.jsonl"
+  push:
+    branches: [main, master]
+    paths:
+      - "tests/test_risk_labels.py"
+      - "create_dataset_module/**"
+      - "PointPillars_module/**"
+      - "data/stage_a_experiment/index.jsonl"
+
+jobs:
+  risk-label-sanity:
+    name: Risk labels sanity (pre-train)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest numpy
+          # data_contracts/types depend on torch import
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Run risk label validation test
+        env:
+          # Override if you want larger/smaller sample in CI
+          RISK_LABEL_TEST_MAX_FILES: "8"
+          RISK_LABEL_TEST_SEED: "13"
+        run: |
+          pytest tests/test_risk_labels.py -q -rA

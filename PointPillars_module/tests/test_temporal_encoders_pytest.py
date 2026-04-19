@@ -16,7 +16,7 @@ _PKG = Path(__file__).resolve().parents[1]
 if str(_PKG) not in sys.path:
     sys.path.insert(0, str(_PKG))
 
-from module_pointpillar import NeckFeatureOutput  # noqa: E402
+from PointPillars_module.types import NeckFeatureOutput  # noqa: E402
 from models.full_pipeline import FullPipeline  # noqa: E402
 from models.temporal_encoders import LSTMTemporal, TransformerEncoderTemporal  # noqa: E402
 from models.temporal_factory import build_temporal  # noqa: E402

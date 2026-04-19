@@ -18,6 +18,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+from collections import OrderedDict
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
@@ -32,11 +33,15 @@ for _p in (_ROOT, _PP_PKG):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from data_contracts import RiskBatch, RiskSample, Trajectory  # noqa: E402
-from module_pointpillar import (  # noqa: E402
+from PointPillars_module.types import (  # noqa: E402
     CameraToLidarExtrinsics,
     DepthCameraIntrinsics,
     DepthPreprocessConfig,
+    RiskBatch,
+    RiskSample,
+    Trajectory,
+)
+from module_pointpillar import (  # noqa: E402
     PointPillarsNeckExtractor,
 )
 
@@ -147,19 +152,38 @@ class RiskDataset(Dataset):
         T_ctx: int = 10,
         preprocess_cfg: Optional[DepthPreprocessConfig] = None,
         scene_filter: Optional[Sequence[int]] = None,
-        extrinsics_convention: str = "identity",
+        extrinsics_convention: str = "pybullet_to_kitti",
         traj_horizon: int = 10,
         bev_cache_root: Optional[str] = None,
+        include_action_seq: bool = True,
+        include_ego_vel_seq: bool = True,
     ) -> None:
         self.root = Path(root)
         self.T_ctx = int(T_ctx)
         self.cfg = cfg
         self.preprocess_cfg = preprocess_cfg or _default_preprocess_cfg()
         self.extrinsics_convention = extrinsics_convention
+        valid_conv = {
+            "pybullet_to_kitti",
+            "opencv_to_kitti",
+            "identity",
+            "from_trajectory",
+        }
+        if self.extrinsics_convention not in valid_conv:
+            raise ValueError(
+                f"unknown extrinsics_convention={self.extrinsics_convention!r}; "
+                f"expected one of {sorted(valid_conv)}"
+            )
         self.traj_horizon = int(traj_horizon)
         if self.traj_horizon < 1:
             raise ValueError("traj_horizon must be >= 1")
         self.bev_cache_root = Path(bev_cache_root) if bev_cache_root else None
+        self.include_action_seq = bool(include_action_seq)
+        self.include_ego_vel_seq = bool(include_ego_vel_seq)
+        # Per-worker tiny LRU to avoid reloading the same rollout .npz for
+        # adjacent samples that share ``meta["path"]``.
+        self._traj_cache: "OrderedDict[str, Trajectory]" = OrderedDict()
+        self._traj_cache_max = 8
 
         # Horizon lookahead (frames). Defaults mirror § 5.1.
         self.h_05s = int(getattr(cfg, "horizon_05s_frames", 10)) if cfg else 10
@@ -212,9 +236,20 @@ class RiskDataset(Dataset):
         return len(self.entries)
 
     # ---------- fetch ----------
+    def _load_traj_cached(self, path: str) -> Trajectory:
+        hit = self._traj_cache.get(path)
+        if hit is not None:
+            self._traj_cache.move_to_end(path)
+            return hit
+        traj = Trajectory.from_npz(path)
+        self._traj_cache[path] = traj
+        if len(self._traj_cache) > self._traj_cache_max:
+            self._traj_cache.popitem(last=False)
+        return traj
+
     def __getitem__(self, idx: int) -> RiskSample:
         meta = self.entries[idx]
-        traj = Trajectory.from_npz(meta["path"])
+        traj = self._load_traj_cached(meta["path"])
         t = int(meta["t"])
         T_ctx = self.T_ctx
 
@@ -249,17 +284,24 @@ class RiskDataset(Dataset):
                 continue
 
             depth_m = traj.depth[tau].astype(np.float32)
-            R_tau = traj.cam_extr_R[tau].astype(np.float32)
-            t_tau = traj.cam_extr_t[tau].astype(np.float32)
-            # For dataset-time work we want the points in a body-relative
-            # frame so the pretrained KITTI weights stay in-distribution.
-            # Use the local extrinsics_convention (identity => cam-frame).
-            extrinsics = CameraToLidarExtrinsics(
-                R=R_tau,
-                t=t_tau,
-                convention="identity",
-            )
-            # Unproject -> world via per-frame R|t -> scale_factor ->
+            # Keep depth-camera modality (D435i-like), then map camera axes
+            # into a KITTI-style local frame for PointPillars.
+            # NOTE:
+            #   - default path uses convention presets (no per-frame world pose)
+            #   - "from_trajectory" reproduces the previous world-frame behavior
+            if self.extrinsics_convention == "from_trajectory":
+                extrinsics = CameraToLidarExtrinsics(
+                    R=traj.cam_extr_R[tau].astype(np.float32),
+                    t=traj.cam_extr_t[tau].astype(np.float32),
+                    convention="identity",
+                )
+            else:
+                extrinsics = CameraToLidarExtrinsics(
+                    R=None,
+                    t=np.zeros(3, dtype=np.float32),
+                    convention=self.extrinsics_convention,
+                )
+            # Unproject -> local KITTI-style frame -> scale_factor ->
             # intensity -> voxel. No torch-grad path here; this is
             # CPU-side dataloader work, and the points are consumed by
             # PointPillarsNeckExtractor.extract_neck* on the training
@@ -269,12 +311,18 @@ class RiskDataset(Dataset):
             )
             pts_seq.append(torch.from_numpy(pts))
 
-        action_seq = torch.from_numpy(
-            traj.action[t - T_ctx + 1 : t + 1].astype(np.float32)
-        )
-        ego_vel_seq = torch.from_numpy(
-            traj.ego_vel[t - T_ctx + 1 : t + 1].astype(np.float32)
-        )
+        if self.include_action_seq:
+            action_seq = torch.from_numpy(
+                traj.action[t - T_ctx + 1 : t + 1].astype(np.float32)
+            )
+        else:
+            action_seq = torch.empty((T_ctx, 0), dtype=torch.float32)
+        if self.include_ego_vel_seq:
+            ego_vel_seq = torch.from_numpy(
+                traj.ego_vel[t - T_ctx + 1 : t + 1].astype(np.float32)
+            )
+        else:
+            ego_vel_seq = torch.empty((T_ctx, 0), dtype=torch.float32)
         H = self.traj_horizon
         fut = traj.ego_state[t + 1 : t + 1 + H, :].astype(np.float32)
         traj_future = fut[:, [0, 1, 5]].copy()

@@ -20,7 +20,7 @@ the streaming contract in § 6.4.2.
 from __future__ import annotations
 
 import warnings
-from typing import List, Literal, Optional, Tuple, Union
+from typing import Literal, Optional, Tuple, Union
 
 import torch
 import torch.nn as nn
@@ -59,6 +59,9 @@ class MambaTemporal(nn.Module):
         self.d_state = d_state
         self.expand = expand
         self.n_blocks = n_blocks
+        # Streaming cache length for backend="mamba" step(). We keep a bounded
+        # token history so state carries across calls without unbounded growth.
+        self._stream_cache_len = 256
 
         resolved = self._resolve_backend(backend)
         self.backend = resolved
@@ -152,8 +155,8 @@ class MambaTemporal(nn.Module):
     def step(
         self,
         tok_t: torch.Tensor,
-        hidden: Optional[Union[torch.Tensor, List[torch.Tensor]]] = None,
-    ) -> Tuple[torch.Tensor, Union[torch.Tensor, List[torch.Tensor]]]:
+        hidden: Optional[torch.Tensor] = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         Advance the temporal encoder by one token.
 
@@ -164,8 +167,7 @@ class MambaTemporal(nn.Module):
                    stepping — consistent with the Stage-A seq layout.
             hidden: backend-specific carrier from the previous step. First
                     call: pass ``None``.
-                    * mamba backend: List[torch.Tensor] of per-block state
-                      tensors, one per block (we carry them as a plain list).
+                    * mamba backend: cached token history Tensor (B, L, D).
                     * gru backend  : Tensor (num_layers, B, D).
 
         Returns:
@@ -181,19 +183,29 @@ class MambaTemporal(nn.Module):
         if self.backend == "gru":
             # (B, D) -> (B, 1, D) for nn.GRU, state stays (num_layers, B, D).
             x = tok_t.unsqueeze(1)
+            if hidden is not None:
+                hidden = hidden.to(device=tok_t.device, dtype=tok_t.dtype)
             out, new_h = self.gru(x, hidden)  # type: ignore[misc]
             return out.squeeze(1), new_h
 
-        # Mamba fallback: run the full-sequence forward on a length-1
-        # input — mamba-ssm itself does not expose an O(1) public streaming
-        # API in the same stable manner across versions. We keep the
-        # public contract identical to GRU (caller carries opaque state)
-        # by shadowing the internal state with a short history window.
-        # `hidden` here is a list of the last token per block; for v1 we
-        # simply recompute from scratch over a single-token window. This is
-        # still O(1) per step at L=1. Deep streaming (L>1) can be layered
-        # on later without changing the public signature.
-        x = tok_t.unsqueeze(1)                  # (B, 1, D)
+        # Mamba path: carry a bounded token-history cache and re-run forward
+        # over that cache. This preserves temporal context across step() calls
+        # while avoiding unbounded memory/time growth.
+        x_t = tok_t.unsqueeze(1)  # (B, 1, D)
+        if hidden is None:
+            cache = x_t
+        else:
+            if hidden.ndim != 3 or hidden.shape[0] != tok_t.shape[0] or hidden.shape[2] != self.d_model:
+                raise ValueError(
+                    "mamba step() hidden must be (B, L, D) matching current batch/token dim; "
+                    f"got {tuple(hidden.shape)} vs B={tok_t.shape[0]} D={self.d_model}"
+                )
+            hidden = hidden.to(device=tok_t.device, dtype=tok_t.dtype)
+            cache = torch.cat([hidden, x_t], dim=1)
+        if cache.shape[1] > self._stream_cache_len:
+            cache = cache[:, -self._stream_cache_len :, :]
+        x = cache
         for block, norm in zip(self.blocks, self.norms):  # type: ignore[arg-type]
             x = x + block(norm(x))
-        return x.squeeze(1), hidden             # carry opaque; None is valid
+        new_hidden = cache.detach()
+        return x[:, -1, :], new_hidden

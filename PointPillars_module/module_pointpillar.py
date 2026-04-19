@@ -71,13 +71,27 @@
 from __future__ import annotations
 
 import os
+import sys
 import warnings
-from dataclasses import dataclass, field
 from typing import Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 import torch
 import torch.nn as nn
+
+_THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+_ROOT = os.path.dirname(_THIS_DIR)
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+
+from PointPillars_module.types import (
+    CameraToLidarExtrinsics,
+    DepthCameraIntrinsics,
+    DepthPreprocessConfig,
+    NeckFeatureOutput,
+    PointCloudInput,
+    PointPillarsConfig,
+)
 
 # NOTE: `PointPillars` is imported LAZILY inside `_build_model` because that
 # import triggers the CUDA `voxel_op` extension. Keeping it out of the
@@ -87,178 +101,6 @@ import torch.nn as nn
 # lets the unit tests import this file without requiring a built voxel_op.
 if False:  # type-checking only
     from pointpillars.model import PointPillars
-
-
-# =====================================================================
-# SPEC / VARIABLE DEFINITIONS (grouped for clarity and easy extension)
-# ---------------------------------------------------------------------
-
-@dataclass
-class PointPillarsConfig:
-    """
-    Hyper-parameters for PointPillars plus runtime settings.
-    Matches the pretrained epoch_160.pth checkpoint (KITTI, 3 classes).
-    """
-    # model hyper-params
-    nclasses: int = 3
-    voxel_size: List[float] = field(
-        default_factory=lambda: [0.16, 0.16, 4.0]
-    )
-    point_cloud_range: List[float] = field(
-        default_factory=lambda: [0.0, -39.68, -3.0, 69.12, 39.68, 1.0]
-    )
-    max_num_points: int = 32
-    max_voxels_train: int = 16000
-    max_voxels_test: int = 40000
-
-    # runtime
-    ckpt_path: str = "pretrained/epoch_160.pth"
-    device: str = "cuda"
-
-    @property
-    def max_voxels(self) -> Tuple[int, int]:
-        return (self.max_voxels_train, self.max_voxels_test)
-
-
-@dataclass
-class PointCloudInput:
-    """
-    Spec for a single input point cloud frame.
-    points: (N, 4) float32 with columns [x, y, z, intensity].
-    """
-    points: torch.Tensor
-    frame_id: Optional[str] = None  # optional metadata
-
-
-@dataclass
-class NeckFeatureOutput:
-    """
-    Output produced by the neck extractor.
-    feature: (B, C, H, W) float32, device is CUDA when config.device='cuda'.
-    """
-    feature: torch.Tensor
-    batch_size: int
-    channels: int
-    height: int
-    width: int
-    device: str
-
-
-# ---------------------------------------------------------------------
-# Depth-camera helpers: specs for turning a depth buffer into a (N, 4)
-# point cloud in the LiDAR frame that PointPillars expects.
-# ---------------------------------------------------------------------
-
-@dataclass
-class DepthCameraIntrinsics:
-    """
-    Pinhole camera intrinsics.
-    fx, fy, cx, cy are in pixels; width/height are the image size.
-    near / far are only used by pybullet_depth_to_meters() to convert
-    PyBullet's normalized depth buffer [0, 1] into metric depth.
-    """
-    fx: float
-    fy: float
-    cx: float
-    cy: float
-    width: int
-    height: int
-    near: float = 0.1
-    # Default is 8.0 m to match the indoor Stage A/B spec
-    # (docs/strategy_full_pipeline.md §5.1 / §6.6). Override for outdoor data.
-    far: float = 8.0
-
-
-@dataclass
-class CameraToLidarExtrinsics:
-    """
-    Rigid transform applied per point:  p_lidar = R @ p_cam + t
-
-    If R is None, a preset rotation matrix is chosen from 'convention':
-      - 'opencv_to_kitti':
-            camera frame  = (x-right, y-down, z-forward)   [OpenCV style]
-            lidar  frame  = (x-forward, y-left, z-up)      [KITTI style]
-      - 'pybullet_to_kitti':
-            camera frame  = (x-right, y-up, z-backward)    [OpenGL / PyBullet]
-            lidar  frame  = (x-forward, y-left, z-up)
-      - 'identity': no rotation.
-
-    t is the position of the camera origin expressed in the LiDAR frame
-    (in meters). Use it to raise the 'virtual LiDAR' above the ground,
-    e.g. t=[0, 0, 1.6] to mimic KITTI's 1.6 m Velodyne height.
-    """
-    R: Optional[np.ndarray] = None
-    t: np.ndarray = field(
-        default_factory=lambda: np.zeros(3, dtype=np.float32)
-    )
-    convention: str = "opencv_to_kitti"
-
-    def matrix(self) -> np.ndarray:
-        if self.R is not None:
-            return np.asarray(self.R, dtype=np.float32)
-        if self.convention == "opencv_to_kitti":
-            return np.array(
-                [[0.0, 0.0, 1.0],
-                 [-1.0, 0.0, 0.0],
-                 [0.0, -1.0, 0.0]],
-                dtype=np.float32,
-            )
-        if self.convention == "pybullet_to_kitti":
-            return np.array(
-                [[0.0, 0.0, -1.0],
-                 [-1.0, 0.0, 0.0],
-                 [0.0, 1.0, 0.0]],
-                dtype=np.float32,
-            )
-        if self.convention == "identity":
-            return np.eye(3, dtype=np.float32)
-        raise ValueError(
-            f"Unknown extrinsics convention: {self.convention}"
-        )
-
-
-@dataclass
-class DepthPreprocessConfig:
-    """
-    Domain-gap mitigation knobs applied AFTER unprojection.
-
-    These preprocessing steps do NOT fix the train/test domain gap
-    completely (depth camera vs Velodyne LiDAR); they only make the
-    input a bit more palatable to the pretrained network. For best
-    downstream quality, fine-tune the neck on depth-camera data.
-
-    - intensity_mode: how to synthesize the 4th channel.
-        * 'zero'              : constant 0.0
-        * 'constant'          : fill with intensity_value
-        * 'normalized_range'  : 1 - clip(||xyz|| / max_range, 0, 1)
-                                (near points get high 'intensity')
-    - voxel_downsample: edge length (m) of a uniform voxel filter.
-        0 disables it. Helps equalize density with KITTI LiDAR.
-    - min_range / max_range: metric clip on camera-frame z to drop
-        invalid / far readings before unprojection.
-    - subsample_ratio: random subsampling (1.0 = keep all).
-    - scale_factor: multiplies the final LiDAR-frame xyz by a constant
-        BEFORE voxelization. Used for the indoor-scale hack described in
-        docs/strategy_full_pipeline.md §4.1 and docs/module_pointpillar.md §7:
-        depth-camera points in an indoor scene only fill the first ~5 m of the
-        KITTI point_cloud_range (~70 m), so the BEV canvas is mostly empty.
-        Setting scale_factor in [5, 10] inflates the scene to fill the canvas
-        without retraining. 1.0 disables it (KITTI-scale LiDAR input).
-    - low_point_warn_ratio: if, after range filtering in extract_neck*, the
-        retained fraction of points drops below this threshold, emit a
-        UserWarning. Useful as an OOD / frame-convention / scale-factor
-        smoke check. Set to 0.0 to disable.
-    """
-    intensity_mode: str = "zero"
-    intensity_value: float = 0.0
-    voxel_downsample: float = 0.0
-    min_range: float = 0.3
-    # Indoor default. Override for outdoor (Velodyne-range) scenes.
-    max_range: float = 8.0
-    subsample_ratio: float = 1.0
-    random_seed: Optional[int] = None
-    scale_factor: float = 1.0
-    low_point_warn_ratio: float = 0.05
 
 
 # =====================================================================

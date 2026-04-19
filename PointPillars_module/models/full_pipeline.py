@@ -16,6 +16,7 @@ default S1 freeze regime.
 
 from __future__ import annotations
 
+from contextlib import nullcontext
 from typing import List, Optional, Tuple, Union
 
 import torch
@@ -178,18 +179,33 @@ class FullPipeline(nn.Module):
         Returns:
             (p_risk, new_hidden) with p_risk shape (B, 3) in probability space.
         """
-        neck = self.pp.extract_neck(pts_t)       # frozen path
-        bev = neck.feature
-        tok_grid = self.reducer(bev)             # (B, Nt, D)
-        # Feed each spatial token through the temporal encoder one at a time
-        # so the hidden state keeps step with the mamba.step contract.
-        h_t = None
-        B, Nt, D = tok_grid.shape
-        for i in range(Nt):
-            h_t, hidden = self.mamba.step(tok_grid[:, i, :], hidden)
-        assert h_t is not None
-        logits = self.head(h_t)
-        return torch.sigmoid(logits), hidden
+        # Keep all train-time stochastic layers disabled in streaming inference.
+        self.eval()
+
+        # Prefer true FP16 autocast on CUDA. On CPU-only debug boxes, keep the
+        # same logic path with a no-op context.
+        pp_param = next(self.pp_model.parameters(), None)
+        device_type = pp_param.device.type if pp_param is not None else "cpu"
+        amp_ctx = (
+            torch.autocast(device_type="cuda", dtype=torch.float16)
+            if device_type == "cuda"
+            else nullcontext()
+        )
+
+        with amp_ctx:
+            neck = self.pp.extract_neck(pts_t)       # frozen path
+            bev = neck.feature
+            tok_grid = self.reducer(bev)             # (B, Nt, D)
+            # Feed each spatial token through the temporal encoder one at a
+            # time so hidden state tracks the streaming contract.
+            h_t = None
+            _, Nt, _ = tok_grid.shape
+            for i in range(Nt):
+                h_t, hidden = self.mamba.step(tok_grid[:, i, :], hidden)
+            assert h_t is not None
+            logits = self.head(h_t)
+            p_risk = torch.sigmoid(logits)
+        return p_risk, hidden
 
     # ---------- misc ----------
     def extra_repr(self) -> str:
