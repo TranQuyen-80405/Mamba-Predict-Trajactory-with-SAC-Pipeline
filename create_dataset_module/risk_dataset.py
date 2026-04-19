@@ -131,6 +131,57 @@ def bev_cache_relpath(traj_relpath: str, frame_idx: int) -> str:
     return str(Path(stem) / f"f{int(frame_idx):06d}.pt")
 
 
+def _read_traj_T_from_npz(npz_path: Path) -> int:
+    """Load scalar ``T`` from disk (may disagree with per-array lengths if npz is inconsistent)."""
+    with np.load(npz_path, allow_pickle=False) as data:
+        return int(data["T"])
+
+
+def _read_effective_T_from_npz(npz_path: Path) -> int:
+    """
+    Effective episode length for indexing: ``min(T, len(risk_*), …)``.
+
+    Some on-disk files can have ``T`` or ``index.jsonl`` out of sync with shorter
+    ``risk_*`` arrays (partial writes, manual edits, or older tooling). Using only
+    the scalar ``T`` then yields invalid frame indices for ``risk_1s_array`` /
+    ``__getitem__``.
+    """
+    with np.load(npz_path, allow_pickle=False) as data:
+        T_meta = int(data["T"])
+        lengths = [T_meta]
+        # Per-time arrays that must align; prefer small reads (no full depth load unless needed).
+        if "risk_1s" not in data:
+            raise ValueError(f"missing risk_1s array in {npz_path}")
+        r1 = np.asarray(data["risk_1s"])
+        lengths.append(int(r1.shape[0]))
+        for key in (
+            "risk_05s",
+            "risk_2s",
+            "contact_flag",
+            "contact",  # legacy alias
+            "action",
+            "ego_vel",
+            "ego_state",
+        ):
+            if key not in data:
+                continue
+            arr = data[key]
+            lengths.append(int(np.asarray(arr).shape[0]))
+        Teff = min(lengths) if lengths else T_meta
+        if Teff < T_meta:
+            import warnings
+
+            warnings.warn(
+                f"npz length mismatch in {npz_path.name}: scalar T={T_meta} but "
+                f"effective T={Teff} from per-array shapes. Using T={Teff}. "
+                "Re-save trajectories with Trajectory.to_npz or regenerate data.",
+                stacklevel=2,
+            )
+        # Intentionally do not read ``depth`` here (large): if Teff matches risk/contact
+        # but depth were shorter, ``__getitem__`` would fail; that indicates a corrupt npz.
+        return int(Teff)
+
+
 class RiskDataset(Dataset):
     """
     One item per (rollout_file, frame_t) pair.
@@ -215,7 +266,22 @@ class RiskDataset(Dataset):
             scene_id = int(r["scene_id"])
             if self._scene_filter is not None and scene_id not in self._scene_filter:
                 continue
-            T = int(r["T"])
+            npz_path = self.root / r["path"]
+            if not npz_path.is_file():
+                raise FileNotFoundError(f"trajectory npz missing: {npz_path}")
+            # Use effective on-disk length: scalar ``T`` and index.jsonl can both be stale
+            # vs shorter ``risk_*`` or ``depth`` (inconsistent npz).
+            T_disk = _read_effective_T_from_npz(npz_path)
+            T_index = int(r.get("T", T_disk))
+            if T_index != T_disk:
+                import warnings
+
+                warnings.warn(
+                    f"index.jsonl T={T_index} != on-disk effective T={T_disk} for {npz_path.name}; "
+                    f"using T={T_disk}. Regenerate index.jsonl after datagen to silence.",
+                    stacklevel=2,
+                )
+            T = T_disk
             t_lo = self.T_ctx - 1
             # Include every frame that has a full trajectory target slice
             # ``ego_state[t+1 : t+1+traj_horizon]`` (exclusive upper ``T - traj_horizon``).
@@ -224,7 +290,7 @@ class RiskDataset(Dataset):
             t_hi_excl = T - self.traj_horizon
             for t in range(t_lo, max(t_lo, t_hi_excl)):
                 entries.append({
-                    "path": str(self.root / r["path"]),
+                    "path": str(npz_path),
                     "traj_relpath": str(r["path"]),
                     "scene_id": scene_id,
                     "rollout_id": int(r["rollout_id"]),
@@ -358,14 +424,39 @@ class RiskDataset(Dataset):
         only need the label, which requires reading the single risk_1s
         array of each trajectory. Cached per-file.
         """
+        import warnings
+
         cache: Dict[str, np.ndarray] = {}
+        warned_paths: set = set()
         out = np.zeros(len(self.entries), dtype=np.float32)
         for i, meta in enumerate(self.entries):
             p = meta["path"]
             if p not in cache:
                 with np.load(p, allow_pickle=False) as data:
+                    if "risk_1s" not in data:
+                        raise KeyError(
+                            f"{p}: missing risk_1s in npz (loader: {__file__})"
+                        )
                     cache[p] = np.asarray(data["risk_1s"]).astype(np.float32)
-            out[i] = float(cache[p][meta["t"]])
+            arr = cache[p]
+            ti = int(meta["t"])
+            if ti < 0:
+                raise IndexError(
+                    f"{p}: negative frame index t={ti} (loader: {__file__})"
+                )
+            if ti >= arr.shape[0]:
+                # Stale index / old RiskDataset without _read_effective_T_from_npz, or bad npz.
+                if p not in warned_paths:
+                    warnings.warn(
+                        f"{p}: sample t={ti} >= len(risk_1s)={arr.shape[0]}; "
+                        f"clamping for class weights. Fix: pull latest risk_dataset.py "
+                        f"and/or regenerate data. Loader: {__file__}",
+                        UserWarning,
+                        stacklevel=2,
+                    )
+                    warned_paths.add(p)
+                ti = max(0, arr.shape[0] - 1)
+            out[i] = float(arr[ti])
         return out
 
 

@@ -313,9 +313,9 @@ class DataGenConfig:
     camera_fov_h_deg: float = 90.0
     camera_near: float = 0.1
     camera_far: float = 8.0
-    policy_random_p: float = 0.5
-    policy_scripted_p: float = 0.3
-    policy_adversarial_p: float = 0.2
+    policy_random_p: float = 0.15
+    policy_scripted_p: float = 0.10
+    policy_adversarial_p: float = 0.75
     policy_stationary_p: float = 0.0
     depth_noise_std: float = 0.01
     drop_pixel_prob: float = 0.02

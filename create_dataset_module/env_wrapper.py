@@ -76,6 +76,14 @@ class DatasetEnv:
 
         # Build the env and silence the logging hooks before they touch disk.
         self._inner = self._make_inner(gui=gui)
+        # Monotonic control-step counter (resets on ``reset_scene``). Matches
+        # generator frame index ``t`` as (step_idx - 1) after each ``step``.
+        self._control_step_idx = 0
+        self._debug_contact = os.environ.get("DATAGEN_DEBUG_CONTACT", "").lower() in (
+            "1",
+            "true",
+            "yes",
+        )
 
     # ---------- factory ----------
     def _make_inner(self, gui: bool):
@@ -184,7 +192,14 @@ class DatasetEnv:
 
     def get_contact_flag(self) -> bool:
         """True iff the robot body is in contact with any non-ground body."""
-        return bool(self._inner.check_collision())
+        c = bool(self._inner.check_collision())
+        if c and self._debug_contact:
+            # ``step()`` has already incremented ``_control_step_idx`` for this frame.
+            print(
+                f"Collision detected at frame {self._control_step_idx - 1}!",
+                flush=True,
+            )
+        return c
 
     # ---------- control ----------
     def drive(self, linear_x: float, angular_z: float) -> None:
@@ -207,6 +222,7 @@ class DatasetEnv:
         """One control tick: drive(action) -> physics sub-steps."""
         self.drive(linear_x, angular_z)
         self.step_physics()
+        self._control_step_idx += 1
 
     # ---------- scene info ----------
     def get_obstacle_aabb(self) -> np.ndarray:
@@ -229,6 +245,7 @@ class DatasetEnv:
             import random
             random.seed(seed)
             np.random.seed(seed)
+        self._control_step_idx = 0
         self._inner._reset_world_for_next_episode()
         self._inner._reset_episode_metrics()
 

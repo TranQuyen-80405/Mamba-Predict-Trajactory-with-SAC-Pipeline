@@ -5,9 +5,9 @@ All policies share the same signature:
     act(obs) -> np.ndarray(2,)  # (linear_x, angular_z)
 
 Mix ratios come from DataGenConfig (must sum to 1.0):
-    random       default 0.50  (broad coverage, ~weak positives)
-    scripted     default 0.30  (goal-oriented, realistic trajectories)
-    adversarial  default 0.20  (pushes positives; tune if positive(1s) too low)
+    random       default 0.15  (broad coverage, ~weak positives)
+    scripted     default 0.10  (goal-oriented, realistic trajectories)
+    adversarial  default 0.75  (pushes positives; tune if positive(1s) too high/low)
     stationary   default 0.00  (v=w=0; dynamic obstacles can still cause contact)
 
 The observation dict has the following keys (produced by the generator
@@ -122,15 +122,23 @@ class ScriptedPolicy(_BasePolicy):
 
 class AdversarialPolicy(_BasePolicy):
     """
-    Heads straight for the nearest obstacle centroid. The generator is
-    responsible for bailing out as soon as ``contact_flag`` trips, so the
-    rollout terminates in the first collision frame and the risk labels
-    are dominated by genuine positives.
+    Steers toward an obstacle centroid chosen to maximize collision rate:
+
+    * Prefer obstacles **in front of the robot** (positive dot with heading);
+      among those, pick the **closest**. Pure Euclidean-nearest can sit
+      behind the robot, wasting the horizon on a slow turn.
+    * If none lie ahead, fall back to global nearest centroid.
+
+    Uses **maximum** commanded linear speed (``MAX_V_MPS``) and a high
+    yaw gain so the diff-drive base aligns quickly toward the target.
+
+    The generator terminates on first ``contact_flag`` when configured,
+    so risk labels stay anchored on real impacts.
     """
 
-    def __init__(self, kp_ang: float = 2.0, v_target: float = 1.0) -> None:
+    def __init__(self, kp_ang: float = 8.0, v_target: float = MAX_V_MPS) -> None:
         self.kp_ang = float(kp_ang)
-        self.v_target = float(v_target)
+        self.v_target = float(min(v_target, MAX_V_MPS))
         self.rng = np.random.default_rng()
 
     def act(self, obs: Dict) -> np.ndarray:
@@ -142,16 +150,27 @@ class AdversarialPolicy(_BasePolicy):
         ).reshape(-1, 2)
 
         if obstacles.shape[0] == 0:
-            # No obstacles known -> just barrel forward with a bit of jitter.
-            w = float(self.rng.uniform(-0.5, 0.5))
-            return np.array([self.v_target, w], dtype=np.float32)
+            # No centroids -> full speed straight; arena walls can still collide.
+            return np.array([self.v_target, 0.0], dtype=np.float32)
 
-        d = np.linalg.norm(obstacles - ego_xy[None, :], axis=1)
-        i = int(np.argmin(d))
+        forward = np.array([np.cos(yaw), np.sin(yaw)], dtype=np.float32)
+        deltas = obstacles - ego_xy[None, :]
+        dists = np.linalg.norm(deltas, axis=1)
+        dots = (deltas * forward[None, :]).sum(axis=1)
+        in_front = dots > 0.05
+        if np.any(in_front):
+            idx = np.where(in_front)[0]
+            i = int(idx[np.argmin(dists[idx])])
+        else:
+            i = int(np.argmin(dists))
         target = obstacles[i]
         delta = target - ego_xy
+        dist = float(np.linalg.norm(delta)) + 1e-6
+        # Unit direction in world XY — same as bearing to AABB centroid.
+        delta /= dist
         desired_yaw = float(np.arctan2(delta[1], delta[0]))
         err = _wrap_angle(desired_yaw - yaw)
+        # Saturate turn aggressively when misaligned so we close distance quickly.
         w = float(np.clip(self.kp_ang * err, -MAX_W_RADPS, MAX_W_RADPS))
         v = float(self.v_target)
         return np.array([v, w], dtype=np.float32)

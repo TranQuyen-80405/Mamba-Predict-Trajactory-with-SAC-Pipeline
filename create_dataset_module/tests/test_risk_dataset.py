@@ -117,6 +117,47 @@ class TestRiskDataset(unittest.TestCase):
             self.assertEqual(arr.shape, (len(ds),))
             self.assertTrue(set(np.unique(arr).tolist()).issubset({0.0, 1.0}))
 
+    def test_effective_T_when_scalar_T_exceeds_risk_arrays(self):
+        """
+        Stale or inconsistent npz can store T=40 while risk_* only have 5 rows.
+        Index must cap at the shorter length so risk_1s_array() does not crash.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            name = "s0000_r00.npz"
+            path = root / name
+            T_scalar = 40
+            Teff = 5
+            risk_05s = np.zeros(Teff, dtype=np.float32)
+            risk_1s = np.zeros(Teff, dtype=np.float32)
+            risk_2s = np.zeros(Teff, dtype=np.float32)
+            np.savez_compressed(
+                path,
+                scene_id=np.int64(0),
+                rollout_id=np.int64(0),
+                T=np.int64(T_scalar),
+                risk_05s=risk_05s,
+                risk_1s=risk_1s,
+                risk_2s=risk_2s,
+            )
+            row = {
+                "path": name,
+                "scene_id": 0,
+                "rollout_id": 0,
+                "T": T_scalar,
+                "n_positive_1s": 0,
+            }
+            with (root / "index.jsonl").open("w", encoding="utf-8") as f:
+                f.write(json.dumps(row) + "\n")
+            cfg = DataGenConfig()
+            ds = RiskDataset(
+                root=str(root), cfg=cfg, T_ctx=2, traj_horizon=1,
+            )
+            self.assertGreater(len(ds), 0)
+            arr = ds.risk_1s_array()
+            self.assertEqual(arr.shape, (len(ds),))
+            self.assertTrue(np.all(arr == 0.0))
+
     def test_scene_filter_restricts_entries(self):
         with tempfile.TemporaryDirectory() as tmp:
             _write_fixture(Path(tmp), n_scenes=3, T=60)

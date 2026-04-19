@@ -42,7 +42,11 @@ from losses import focal_bce  # noqa: E402
 from module_pointpillar import PointPillarsNeckExtractor  # noqa: E402
 from models.full_pipeline_risk_traj import FullPipelineRiskAndTraj  # noqa: E402
 from models.temporal_factory import build_temporal  # noqa: E402
-from risk_dataset import RiskDataset, collate_riskbatch, scene_stratified_split  # noqa: E402
+from create_dataset_module.risk_dataset import (  # noqa: E402
+    RiskDataset,
+    collate_riskbatch,
+    scene_stratified_split,
+)
 from PointPillars_module.types import PointPillarsConfig  # noqa: E402
 from utils.gradient_health import grad_norm_l2, max_grad_value  # noqa: E402
 from utils.mamba_runtime import log_mamba_temporal_runtime  # noqa: E402

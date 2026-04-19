@@ -30,9 +30,9 @@ def main() -> None:
         n_scenes=10,
         rollouts_per_scene=2,
         frames_per_rollout=200,
-        policy_random_p=0.5,
-        policy_scripted_p=0.3,
-        policy_adversarial_p=0.2,
+        policy_random_p=0.15,
+        policy_scripted_p=0.10,
+        policy_adversarial_p=0.75,
         seed=0,
     )
 

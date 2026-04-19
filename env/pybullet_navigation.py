@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import pybullet as p
 import pybullet_data
 import numpy as np
@@ -7,14 +9,22 @@ import math
 import os
 import csv
 from datetime import datetime
+
+# Jupyter / inline backends can break before pyplot loads; match legacy root shim.
+_mpl_be = os.environ.get("MPLBACKEND", "")
+if "inline" in _mpl_be.lower() or _mpl_be.startswith("module://"):
+    os.environ["MPLBACKEND"] = "Agg"
+import matplotlib
+
+matplotlib.use("Agg", force=True)
 import matplotlib.pyplot as plt
 
 MAP_SIZE = 12.0
 SIM_FREQ = 200
 CTRL_FREQ = 50
 
-N_STATIC_OBS    = 12      
-N_DYNAMIC_OBS   = 5       
+N_STATIC_OBS    = 20
+N_DYNAMIC_OBS   = 6
 DYN_SPEED       = 1.8
 
 CAMERA_DIST = 4.0
@@ -150,35 +160,44 @@ class RL_Env:
             writer.writerow(["step", "point_idx", "x", "y", "z", "intensity"])
 
     def create_walls(self):
+        """Arena walls; body ids stored for collision / debugging."""
+        self.wall_ids = []
         h, t = MAP_SIZE, 0.3
         for pos, size in [([0,h,0.5],[h,t,1]), ([0,-h,0.5],[h,t,1]),
                           ([h,0,0.5],[t,h,1]), ([-h,0,0.5],[t,h,1])]:
             col = p.createCollisionShape(p.GEOM_BOX, halfExtents=size)
             vis = p.createVisualShape(p.GEOM_BOX, halfExtents=size, rgbaColor=[0.4,0.4,0.5,1])
-            p.createMultiBody(0, col, vis, pos)
+            bid = p.createMultiBody(0, col, vis, pos)
+            self.wall_ids.append(bid)
 
     def create_obstacles(self):
+        """
+        Spawn obstacles in an annulus around spawn so the diff-drive base can
+        reach them within a short horizon (Stage A rollouts are often 120 frames).
+
+        Static + dynamic boxes use radial distance r in [1.0, 2.5] m from (0,0).
+        """
         for bid in self.static_obs + self.dynamic_obs:
             p.removeBody(bid)
         self.static_obs.clear()
         self.dynamic_obs.clear()
 
+        def _sample_xy_ring() -> tuple[float, float]:
+            """Uniform in annulus; keeps obstacles reachable from origin."""
+            r = random.uniform(1.0, 2.5)
+            ang = random.uniform(0.0, 2.0 * np.pi)
+            return float(r * np.cos(ang)), float(r * np.sin(ang))
+
         for _ in range(N_STATIC_OBS):
-            x = random.uniform(-MAP_SIZE+2, MAP_SIZE-2)
-            y = random.uniform(-MAP_SIZE+2, MAP_SIZE-2)
-            if abs(x) < 3 and abs(y) < 3: 
-                continue  
-            size = random.uniform(0.2,0.9)
+            x, y = _sample_xy_ring()
+            size = random.uniform(0.2, 0.55)
             col = p.createCollisionShape(p.GEOM_BOX, halfExtents=[size, size, size])
             vis = p.createVisualShape(p.GEOM_BOX, halfExtents=[size, size, size], rgbaColor=[0.2, 0.5, 0.8, 1])
             bid = p.createMultiBody(0, col, vis, [x, y, size])
             self.static_obs.append(bid)
 
         for _ in range(N_DYNAMIC_OBS):
-            x = random.uniform(-MAP_SIZE+3, MAP_SIZE-3)
-            y = random.uniform(-MAP_SIZE+3, MAP_SIZE-3)
-            if abs(x) < 4 and abs(y) < 4: 
-                continue
+            x, y = _sample_xy_ring()
             size = 0.35
             col = p.createCollisionShape(p.GEOM_BOX, halfExtents=[size, size, size])
             vis = p.createVisualShape(p.GEOM_BOX, halfExtents=[size, size, size], rgbaColor=[0.9, 0.3, 0.2, 1])
@@ -209,12 +228,13 @@ class RL_Env:
         omega_l = (v - 0.5 * WHEEL_BASE * w) / WHEEL_RADIUS
         omega_r = (v + 0.5 * WHEEL_BASE * w) / WHEEL_RADIUS
 
+        wheel_force = 120.0
         for j in self.left_wheels:
             p.setJointMotorControl2(self.robot, j, p.VELOCITY_CONTROL,
-                                    targetVelocity=omega_l, force=80)
+                                    targetVelocity=omega_l, force=wheel_force)
         for j in self.right_wheels:
             p.setJointMotorControl2(self.robot, j, p.VELOCITY_CONTROL,
-                                    targetVelocity=omega_r, force=80)
+                                    targetVelocity=omega_r, force=wheel_force)
 
     def step_cmd_vel(self, linear_x, angular_z):
         return self.step((linear_x, angular_z))
@@ -625,9 +645,36 @@ class RL_Env:
         }
 
     def check_collision(self):
-        contacts = p.getContactPoints(self.robot)
+        """
+        True if the robot touches any body other than the ground plane.
+
+        Combines:
+        * ``getContactPoints`` for all links of the robot (handles body A/B order).
+        * ``getClosestPoints`` vs each obstacle/wall as a fallback when PyBullet
+          omits contact points for shallow penetrations / sleeping pairs.
+        """
+        rid = self.robot
+        pid = self.plane_id
+
+        contacts = p.getContactPoints(bodyA=rid)
         for c in contacts:
-            if c[2] != 0:
+            if len(c) < 3:
+                continue
+            a, b = int(c[1]), int(c[2])
+            if a == rid:
+                other = b
+            elif b == rid:
+                other = a
+            else:
+                continue
+            if other != pid:
+                return True
+
+        # Fallback: separation distance (index 8); negative => penetration.
+        # ``distance=0.0`` can return no points on some builds; use a small margin.
+        for oid in self.static_obs + self.dynamic_obs + getattr(self, "wall_ids", []):
+            pts = p.getClosestPoints(rid, oid, distance=2.0)
+            if pts and len(pts[0]) > 8 and float(pts[0][8]) < 0.002:
                 return True
         return False
 

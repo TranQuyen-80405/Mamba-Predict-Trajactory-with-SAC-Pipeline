@@ -39,9 +39,9 @@ class TestDatasetEnv(unittest.TestCase):
             intr = env.get_cam_intrinsics()
             self.assertEqual(intr.shape, (4,))
             fx, fy, cx, cy = intr.tolist()
-            # With W=160, FoV_h=90°: fx = (W/2)/tan(45°) = 80.
+            # With W=160, FoV_h=90°: fx = (W/2)/tan(45°) = 80; fy = fx * (H/W) for square pixels.
             self.assertAlmostEqual(fx, 80.0, places=5)
-            self.assertAlmostEqual(fy, 80.0, places=5)
+            self.assertAlmostEqual(fy, 60.0, places=5)
             self.assertAlmostEqual(cx, 80.0, places=5)
             self.assertAlmostEqual(cy, 60.0, places=5)
         finally:

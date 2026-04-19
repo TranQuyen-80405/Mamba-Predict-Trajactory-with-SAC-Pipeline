@@ -35,9 +35,9 @@ def _cfg_smoke_nb() -> DataGenConfig:
         n_scenes=10,
         rollouts_per_scene=2,
         frames_per_rollout=200,
-        policy_random_p=0.5,
-        policy_scripted_p=0.3,
-        policy_adversarial_p=0.2,
+        policy_random_p=0.15,
+        policy_scripted_p=0.10,
+        policy_adversarial_p=0.75,
         seed=0,
     )
 
@@ -52,9 +52,9 @@ def _cfg_experiment() -> DataGenConfig:
         n_scenes=24,
         rollouts_per_scene=3,
         frames_per_rollout=120,
-        policy_random_p=0.5,
-        policy_scripted_p=0.3,
-        policy_adversarial_p=0.2,
+        policy_random_p=0.15,
+        policy_scripted_p=0.10,
+        policy_adversarial_p=0.75,
         save_rgb=False,
         seed=0,
     )
@@ -66,9 +66,9 @@ def _cfg_full() -> DataGenConfig:
         n_scenes=200,
         rollouts_per_scene=4,
         frames_per_rollout=400,
-        policy_random_p=0.5,
-        policy_scripted_p=0.3,
-        policy_adversarial_p=0.2,
+        policy_random_p=0.15,
+        policy_scripted_p=0.10,
+        policy_adversarial_p=0.75,
         seed=42,
     )
 
@@ -80,9 +80,9 @@ def _cfg_rgb_spotcheck() -> DataGenConfig:
         n_scenes=1,
         rollouts_per_scene=1,
         frames_per_rollout=120,
-        policy_random_p=0.34,
-        policy_scripted_p=0.33,
-        policy_adversarial_p=0.33,
+        policy_random_p=0.15,
+        policy_scripted_p=0.10,
+        policy_adversarial_p=0.75,
         save_rgb=True,
         seed=0,
     )

@@ -285,8 +285,6 @@ class DataGenerator:
         action = np.zeros((T_max, 2), dtype=np.float32)
         contact = np.zeros((T_max,), dtype=np.bool_)
 
-        obstacle_aabb = env.get_obstacle_aabb()
-
         T_actual = T_max
         contact_frame = -1
         for t in range(T_max):
@@ -313,6 +311,7 @@ class DataGenerator:
             ego_state[t] = env.get_ego_state()
             ego_vel[t] = env.get_ego_vel()
 
+            obstacle_aabb = env.get_obstacle_aabb()
             obs = {
                 "ego_xy": ego_state[t, :2],
                 "yaw": float(ego_state[t, 5]),
@@ -355,6 +354,8 @@ class DataGenerator:
             # Placeholder: length-0 uint8 tensor. Trajectory doesn't
             # validate rgb shape, so this is safe for to_npz/from_npz.
             rgb = np.zeros((0,), dtype=np.uint8)
+
+        obstacle_aabb = env.get_obstacle_aabb()
 
         traj = Trajectory(
             scene_id=int(scene_id),
