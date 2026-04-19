@@ -1,0 +1,17 @@
+# Dependencies for pybullet_navigation.py
+# Install:  python -m pip install -r requirements.txt
+#
+# Run:
+# 1) cd to this folder (same level as urdf/), e.g.  cd e:\RobotDog_Project\env
+# 2) (Recommended) Python 3.9+ venv, then install packages above.
+# 3) Run:  python pybullet_navigation.py
+#
+# Notes:
+# - Loads urdf/diff_drive_2wheel.urdf - run from the correct working directory.
+# - __main__ uses gui=False (PyBullet DIRECT, no window). For GUI and keys
+#   (W/S/A/D, R, Q), use RL_Env(gui=True) in the .py file.
+# - Logs/CSV/images go under experiment/ when you run.
+
+pybullet>=3.2.5
+numpy>=1.21.0
+matplotlib>=3.5.0
