@@ -1,4 +1,4 @@
-# RobotDog Pipeline
+# Mamba-Predict-Trajactory-with-SAC-Pipeline
 
 PointPillars → temporal encoder → risk + trajectory (Stage A) → SAC on proprio (Stage B). Specs: `docs/strategy_full_pipeline.md`.
 

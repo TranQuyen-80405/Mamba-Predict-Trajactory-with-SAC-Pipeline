@@ -10,9 +10,10 @@ This guide is the reproducible setup path for Linux training hosts to avoid depe
 
 ## Quick start
 
-From repo root:
+From repo root (example repo folder name: `Mamba-Predict-Trajactory-with-SAC-Pipeline`):
 
 ```bash
+cd ~/Mamba-Predict-Trajactory-with-SAC-Pipeline
 chmod +x scripts/setup_train_env_ubuntu2404.sh
 TORCH_MODE=cpu INSTALL_MAMBA=0 ./scripts/setup_train_env_ubuntu2404.sh
 ```
