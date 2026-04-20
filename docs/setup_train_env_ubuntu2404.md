@@ -18,10 +18,16 @@ chmod +x scripts/setup_train_env_ubuntu2404.sh
 TORCH_MODE=cpu INSTALL_MAMBA=0 ./scripts/setup_train_env_ubuntu2404.sh
 ```
 
-For GPU training:
+For GPU training (CUDA toolkit **12.6** on PATH / `nvcc`: use **`cu126`** or **`auto`** so PyTorch matches `nvcc` when building `causal-conv1d`; **`cu124`** with `nvcc` 12.6 causes a CUDA version mismatch):
 
 ```bash
-TORCH_MODE=cu124 INSTALL_MAMBA=1 ./scripts/setup_train_env_ubuntu2404.sh
+TORCH_MODE=auto INSTALL_MAMBA=1 ./scripts/setup_train_env_ubuntu2404.sh
+```
+
+Hoặc chỉ định thủ công:
+
+```bash
+TORCH_MODE=cu126 INSTALL_MAMBA=1 ./scripts/setup_train_env_ubuntu2404.sh
 ```
 
 Script behavior:
@@ -61,6 +67,25 @@ These are real failures observed during environment bring-up and now handled in 
 5) Fresh WSL distro missing `torch/numpy/pytest`
 - Cause: new distro has only base Python.
 - Fix: mandatory dependency bootstrap before running any project sanity tests.
+
+6) `causal-conv1d` / `mamba-ssm` build: CUDA in `nvcc` does not match PyTorch wheel (e.g. system **12.6** vs `torch+cu124` **12.4**)
+- Symptom: `RuntimeError` from `torch.utils.cpp_extension._check_cuda_version`.
+- Fix: install PyTorch with the matching wheel tag (`TORCH_MODE=cu126` or `TORCH_MODE=auto` when `nvcc` is CUDA 12.6+), or install a CUDA **12.4** toolkit and point `CUDA_HOME` at it.
+
+7) `nvcc` **12.4** but PyTorch **`+cu121`** (CUDA **12.1**) — often leftover torch in `.venv-linux-2404` or `TORCH_MODE=cu121` while the toolkit on `PATH` is 12.4
+- Symptom: mismatch `'12.4', '12.1'` in `_check_cuda_version`.
+- Fix: `TORCH_MODE=cu124` or `TORCH_MODE=auto`, and ensure pip upgrades torch (this script uses `--upgrade`); if needed, delete the venv and rerun.
+
+8) `nvcc` **12.9** but PyTorch **`+cu130`** (CUDA **13.0**) — pip pulled the latest CUDA13 wheel while the system toolkit is still 12.x
+- Symptom: mismatch `'12.9', '13.0'` in `_check_cuda_version`.
+- Fix: **`TORCH_MODE=cu129`** or **`TORCH_MODE=auto`** (maps 12.9→`cu129`). To use **cu130**, install a **CUDA 13.x** toolkit so `nvcc` reports 13.x.
+
+9) **Even with `TORCH_MODE=cu129`**, `pip install causal-conv1d` / `mamba-ssm` can **upgrade `torch` again** — both declare a bare **`torch`** dependency on PyPI (no CUDA pin), so pip may install the **latest** torch (**+cu130**) from PyPI.org.
+- Symptom: CUDA check passed, then **`causal-conv1d`** build fails again with `12.9` vs `13.0`.
+- Fix: this script installs **`causal-conv1d` and `mamba-ssm` with `--no-deps`** after installing `einops` / `transformers` / etc., so **`torch` is not upgraded** by those resolves.
+
+10) **Pip build isolation** (`/tmp/pip-build-env-*`) installs its **own** `torch` (often **+cu130**) while compiling sdist → same `12.9` vs `13.0` mismatch.
+- Fix: install **`causal-conv1d` and `mamba-ssm` with `--no-build-isolation`** so compilation uses the venv’s `torch` wheel.
 
 ## Verified commands (Linux venv)
 

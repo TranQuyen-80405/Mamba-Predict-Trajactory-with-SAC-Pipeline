@@ -91,7 +91,9 @@ def test_full_pipeline_mock_logits_shape() -> None:
 @pytest.mark.skipif(not torch.cuda.is_available(), reason="CUDA not available")
 def test_mamba_factory_import_if_cuda() -> None:
     pytest.importorskip("mamba_ssm", reason="mamba-ssm not installed")
-    m = build_temporal("mamba", d_model=64, n_blocks=1, mamba_backend="mamba")
+    m = build_temporal("mamba", d_model=64, n_blocks=1, mamba_backend="mamba").to(
+        "cuda"
+    )
     x = torch.randn(2, 16, 64, device="cuda")
     y = m(x)
     assert y.shape == x.shape
