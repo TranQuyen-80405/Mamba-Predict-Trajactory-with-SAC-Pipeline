@@ -1,0 +1,397 @@
+[setup] repo=/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline
+[setup] venv=.venv-linux-2404
+[setup] torch_mode=cpu
+[setup] torch_mode_effective=cpu
+[setup] install_mamba=1
+[setup] log=/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/logs/setup_ubuntu2404_20260420_061559.log
+[step] install system prerequisites
+Hit:1 https://dl.google.com/linux/chrome/deb stable InRelease
+Hit:2 https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64  InRelease
+Hit:3 http://security.ubuntu.com/ubuntu noble-security InRelease
+Hit:4 http://archive.ubuntu.com/ubuntu noble InRelease
+Hit:5 https://ppa.launchpadcontent.net/pipewire-debian/pipewire-upstream/ubuntu noble InRelease
+Hit:6 http://archive.ubuntu.com/ubuntu noble-updates InRelease
+Hit:7 https://ppa.launchpadcontent.net/pipewire-debian/wireplumber-upstream/ubuntu noble InRelease
+Hit:8 http://archive.ubuntu.com/ubuntu noble-backports InRelease
+Reading package lists...
+Reading package lists...
+Building dependency tree...
+Reading state information...
+build-essential is already the newest version (12.10ubuntu1).
+The following packages were automatically installed and are no longer required:
+  libopencore-amrnb0 libopencore-amrwb0
+Use 'sudo apt autoremove' to remove them.
+The following additional packages will be installed:
+  idle-python3.12 libpython3.12-dev libpython3.12-minimal libpython3.12-stdlib
+  libpython3.12-testsuite libpython3.12t64 python3.12 python3.12-dev
+  python3.12-full python3.12-minimal
+Suggested packages:
+  python3.12-doc binfmt-support
+Recommended packages:
+  python3.12-doc python3.12-examples
+The following packages will be upgraded:
+  idle-python3.12 libpython3.12-dev libpython3.12-minimal libpython3.12-stdlib
+  libpython3.12-testsuite libpython3.12t64 python3.12 python3.12-dev
+  python3.12-full python3.12-minimal python3.12-venv
+11 upgraded, 0 newly installed, 0 to remove and 153 not upgraded.
+Need to get 19.5 MB of archives.
+After this operation, 23.6 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12-dev amd64 3.12.3-1ubuntu0.12 [498 kB]
+Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-dev amd64 3.12.3-1ubuntu0.12 [5681 kB]
+Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12t64 amd64 3.12.3-1ubuntu0.12 [2345 kB]
+Get:4 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 python3.12-full amd64 3.12.3-1ubuntu0.12 [1112 B]
+Get:5 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 python3.12-venv amd64 3.12.3-1ubuntu0.12 [5666 B]
+Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12 amd64 3.12.3-1ubuntu0.12 [651 kB]
+Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-stdlib amd64 3.12.3-1ubuntu0.12 [2069 kB]
+Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12-minimal amd64 3.12.3-1ubuntu0.12 [2334 kB]
+Get:9 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3.12-minimal amd64 3.12.3-1ubuntu0.12 [837 kB]
+Get:10 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 libpython3.12-testsuite all 3.12.3-1ubuntu0.12 [4634 kB]
+Get:11 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 idle-python3.12 all 3.12.3-1ubuntu0.12 [424 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 19.5 MB in 12s (1687 kB/s)
+(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 151226 files and directories currently installed.)
+Preparing to unpack .../00-python3.12-dev_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking python3.12-dev (3.12.3-1ubuntu0.12) over (3.12.3-1ubuntu0.9) ...
+Preparing to unpack .../01-libpython3.12-dev_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking libpython3.12-dev:amd64 (3.12.3-1ubuntu0.12) over (3.12.3-1ubuntu0.9) ...
+Preparing to unpack .../02-libpython3.12t64_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking libpython3.12t64:amd64 (3.12.3-1ubuntu0.12) over (3.12.3-1ubuntu0.9) ...
+Preparing to unpack .../03-python3.12-full_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking python3.12-full (3.12.3-1ubuntu0.12) over (3.12.3-1ubuntu0.9) ...
+Preparing to unpack .../04-python3.12-venv_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking python3.12-venv (3.12.3-1ubuntu0.12) over (3.12.3-1ubuntu0.9) ...
+Preparing to unpack .../05-python3.12_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking python3.12 (3.12.3-1ubuntu0.12) over (3.12.3-1ubuntu0.9) ...
+Preparing to unpack .../06-libpython3.12-stdlib_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.12) over (3.12.3-1ubuntu0.9) ...
+Preparing to unpack .../07-python3.12-minimal_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking python3.12-minimal (3.12.3-1ubuntu0.12) over (3.12.3-1ubuntu0.9) ...
+Preparing to unpack .../08-libpython3.12-minimal_3.12.3-1ubuntu0.12_amd64.deb ...
+Unpacking libpython3.12-minimal:amd64 (3.12.3-1ubuntu0.12) over (3.12.3-1ubuntu0.9) ...
+Preparing to unpack .../09-libpython3.12-testsuite_3.12.3-1ubuntu0.12_all.deb ...
+Unpacking libpython3.12-testsuite (3.12.3-1ubuntu0.12) over (3.12.3-1ubuntu0.9) ...
+Preparing to unpack .../10-idle-python3.12_3.12.3-1ubuntu0.12_all.deb ...
+Unpacking idle-python3.12 (3.12.3-1ubuntu0.12) over (3.12.3-1ubuntu0.9) ...
+Setting up libpython3.12-minimal:amd64 (3.12.3-1ubuntu0.12) ...
+Setting up python3.12-minimal (3.12.3-1ubuntu0.12) ...
+Setting up libpython3.12-stdlib:amd64 (3.12.3-1ubuntu0.12) ...
+Setting up python3.12 (3.12.3-1ubuntu0.12) ...
+Setting up libpython3.12t64:amd64 (3.12.3-1ubuntu0.12) ...
+Setting up libpython3.12-testsuite (3.12.3-1ubuntu0.12) ...
+Setting up idle-python3.12 (3.12.3-1ubuntu0.12) ...
+Setting up python3.12-venv (3.12.3-1ubuntu0.12) ...
+Setting up python3.12-full (3.12.3-1ubuntu0.12) ...
+Setting up libpython3.12-dev:amd64 (3.12.3-1ubuntu0.12) ...
+Setting up python3.12-dev (3.12.3-1ubuntu0.12) ...
+Processing triggers for libc-bin (2.39-0ubuntu8.7) ...
+Processing triggers for systemd (255.4-1ubuntu8.12) ...
+Processing triggers for man-db (2.12.0-4build2) ...
+Processing triggers for desktop-file-utils (0.27-2build1) ...
+[step] create/refresh venv
+[step] bootstrap pip toolchain
+Requirement already satisfied: pip in ./.venv-linux-2404/lib/python3.12/site-packages (24.0)
+Collecting pip
+  Downloading pip-26.0.1-py3-none-any.whl.metadata (4.7 kB)
+Collecting wheel
+  Downloading wheel-0.46.3-py3-none-any.whl.metadata (2.4 kB)
+Collecting packaging>=24.0 (from wheel)
+  Downloading packaging-26.1-py3-none-any.whl.metadata (3.5 kB)
+Downloading pip-26.0.1-py3-none-any.whl (1.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 11.6 MB/s eta 0:00:00
+
+Downloading wheel-0.46.3-py3-none-any.whl (30 kB)
+Downloading packaging-26.1-py3-none-any.whl (95 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 95.8/95.8 kB 14.0 MB/s eta 0:00:00
+
+Installing collected packages: pip, packaging, wheel
+  Attempting uninstall: pip
+    Found existing installation: pip 24.0
+    Uninstalling pip-24.0:
+      Successfully uninstalled pip-24.0
+Successfully installed packaging-26.1 pip-26.0.1 wheel-0.46.3
+Collecting setuptools==81.0.0
+  Downloading setuptools-81.0.0-py3-none-any.whl.metadata (6.6 kB)
+Downloading setuptools-81.0.0-py3-none-any.whl (1.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 11.3 MB/s  0:00:00
+
+Installing collected packages: setuptools
+Successfully installed setuptools-81.0.0
+[step] install torch
+[info] uninstalling any existing torch/torchvision/torchaudio in venv (ignore errors if absent)
+Looking in indexes: https://download.pytorch.org/whl/cpu, https://pypi.org/simple
+Collecting torch
+  Downloading https://download-r2.pytorch.org/whl/cpu/torch-2.11.0%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (29 kB)
+Collecting filelock (from torch)
+  Downloading filelock-3.29.0-py3-none-any.whl.metadata (2.0 kB)
+Collecting typing-extensions>=4.10.0 (from torch)
+  Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting setuptools<82 (from torch)
+  Downloading setuptools-81.0.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting sympy>=1.13.3 (from torch)
+  Downloading sympy-1.14.0-py3-none-any.whl.metadata (12 kB)
+Collecting networkx>=2.5.1 (from torch)
+  Downloading networkx-3.6.1-py3-none-any.whl.metadata (6.8 kB)
+Collecting jinja2 (from torch)
+  Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting fsspec>=0.8.5 (from torch)
+  Downloading fsspec-2026.3.0-py3-none-any.whl.metadata (10 kB)
+Collecting mpmath<1.4,>=1.1.0 (from sympy>=1.13.3->torch)
+  Downloading mpmath-1.3.0-py3-none-any.whl.metadata (8.6 kB)
+Collecting MarkupSafe>=2.0 (from jinja2->torch)
+  Downloading markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Downloading https://download-r2.pytorch.org/whl/cpu/torch-2.11.0%2Bcpu-cp312-cp312-manylinux_2_28_x86_64.whl (190.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 190.3/190.3 MB 74.3 MB/s  0:00:02
+
+Downloading setuptools-81.0.0-py3-none-any.whl (1.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 14.8 MB/s  0:00:00
+
+Downloading fsspec-2026.3.0-py3-none-any.whl (202 kB)
+Downloading networkx-3.6.1-py3-none-any.whl (2.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.1/2.1 MB 50.8 MB/s  0:00:00
+
+Downloading sympy-1.14.0-py3-none-any.whl (6.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.3/6.3 MB 74.7 MB/s  0:00:00
+
+Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.2/536.2 kB 173.9 MB/s  0:00:00
+
+Downloading typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Downloading filelock-3.29.0-py3-none-any.whl (39 kB)
+Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+Downloading markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Installing collected packages: mpmath, typing-extensions, sympy, setuptools, networkx, MarkupSafe, fsspec, filelock, jinja2, torch
+  Attempting uninstall: setuptools
+    Found existing installation: setuptools 81.0.0
+    Uninstalling setuptools-81.0.0:
+      Successfully uninstalled setuptools-81.0.0
+
+
+Successfully installed MarkupSafe-3.0.3 filelock-3.29.0 fsspec-2026.3.0 jinja2-3.1.6 mpmath-1.3.0 networkx-3.6.1 setuptools-81.0.0 sympy-1.14.0 torch-2.11.0+cpu typing-extensions-4.15.0
+/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/.venv-linux-2404/lib/python3.12/site-packages/torch/_subclasses/functional_tensor.py:307: UserWarning: Failed to initialize NumPy: No module named 'numpy' (Triggered internally at /pytorch/torch/csrc/utils/tensor_numpy.cpp:84.)
+  cpu = _conversion_method_template(device=torch.device("cpu"))
+[info] torch: 2.11.0+cpu | torch.version.cuda: None
+[step] install numpy (early — avoids torch warning before CUDA check)
+Collecting numpy
+  Downloading numpy-2.4.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+Downloading numpy-2.4.4-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.6/16.6 MB 68.5 MB/s  0:00:00
+
+Installing collected packages: numpy
+Successfully installed numpy-2.4.4
+[step] install project python deps
+Collecting ninja
+  Downloading ninja-1.13.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (5.1 kB)
+Collecting pytest
+  Using cached pytest-9.0.3-py3-none-any.whl.metadata (7.6 kB)
+Collecting tensorboard
+  Downloading tensorboard-2.20.0-py3-none-any.whl.metadata (1.8 kB)
+Collecting scikit-learn
+  Downloading scikit_learn-1.8.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (11 kB)
+Collecting iniconfig>=1.0.1 (from pytest)
+  Using cached iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+Requirement already satisfied: packaging>=22 in ./.venv-linux-2404/lib/python3.12/site-packages (from pytest) (26.1)
+Collecting pluggy<2,>=1.5 (from pytest)
+  Using cached pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+Collecting pygments>=2.7.2 (from pytest)
+  Downloading pygments-2.20.0-py3-none-any.whl.metadata (2.5 kB)
+Collecting absl-py>=0.4 (from tensorboard)
+  Downloading absl_py-2.4.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting grpcio>=1.48.2 (from tensorboard)
+  Downloading grpcio-1.80.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (3.8 kB)
+Collecting markdown>=2.6.8 (from tensorboard)
+  Downloading markdown-3.10.2-py3-none-any.whl.metadata (5.1 kB)
+Requirement already satisfied: numpy>=1.12.0 in ./.venv-linux-2404/lib/python3.12/site-packages (from tensorboard) (2.4.4)
+Collecting pillow (from tensorboard)
+  Downloading pillow-12.2.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (8.8 kB)
+Collecting protobuf!=4.24.0,>=3.19.6 (from tensorboard)
+  Downloading protobuf-7.34.1-cp310-abi3-manylinux2014_x86_64.whl.metadata (595 bytes)
+Requirement already satisfied: setuptools>=41.0.0 in ./.venv-linux-2404/lib/python3.12/site-packages (from tensorboard) (81.0.0)
+Collecting tensorboard-data-server<0.8.0,>=0.7.0 (from tensorboard)
+  Downloading tensorboard_data_server-0.7.2-py3-none-manylinux_2_31_x86_64.whl.metadata (1.1 kB)
+Collecting werkzeug>=1.0.1 (from tensorboard)
+  Downloading werkzeug-3.1.8-py3-none-any.whl.metadata (4.0 kB)
+Collecting scipy>=1.10.0 (from scikit-learn)
+  Downloading scipy-1.17.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (62 kB)
+Collecting joblib>=1.3.0 (from scikit-learn)
+  Downloading joblib-1.5.3-py3-none-any.whl.metadata (5.5 kB)
+Collecting threadpoolctl>=3.2.0 (from scikit-learn)
+  Downloading threadpoolctl-3.6.0-py3-none-any.whl.metadata (13 kB)
+Requirement already satisfied: typing-extensions~=4.12 in ./.venv-linux-2404/lib/python3.12/site-packages (from grpcio>=1.48.2->tensorboard) (4.15.0)
+Requirement already satisfied: markupsafe>=2.1.1 in ./.venv-linux-2404/lib/python3.12/site-packages (from werkzeug>=1.0.1->tensorboard) (3.0.3)
+Downloading ninja-1.13.0-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (180 kB)
+Using cached pytest-9.0.3-py3-none-any.whl (375 kB)
+Using cached pluggy-1.6.0-py3-none-any.whl (20 kB)
+Downloading tensorboard-2.20.0-py3-none-any.whl (5.5 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.5/5.5 MB 43.8 MB/s  0:00:00
+
+Downloading tensorboard_data_server-0.7.2-py3-none-manylinux_2_31_x86_64.whl (6.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.6/6.6 MB 74.4 MB/s  0:00:00
+
+Downloading scikit_learn-1.8.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (8.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 8.9/8.9 MB 65.8 MB/s  0:00:00
+
+Downloading absl_py-2.4.0-py3-none-any.whl (135 kB)
+Downloading grpcio-1.80.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (6.8 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.8/6.8 MB 92.4 MB/s  0:00:00
+
+Using cached iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+Downloading joblib-1.5.3-py3-none-any.whl (309 kB)
+Downloading markdown-3.10.2-py3-none-any.whl (108 kB)
+Downloading protobuf-7.34.1-cp310-abi3-manylinux2014_x86_64.whl (324 kB)
+Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 74.1 MB/s  0:00:00
+
+Downloading scipy-1.17.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (35.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 35.2/35.2 MB 93.1 MB/s  0:00:00
+
+Downloading threadpoolctl-3.6.0-py3-none-any.whl (18 kB)
+Downloading werkzeug-3.1.8-py3-none-any.whl (226 kB)
+Downloading pillow-12.2.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (7.1 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.1/7.1 MB 93.9 MB/s  0:00:00
+
+Installing collected packages: werkzeug, threadpoolctl, tensorboard-data-server, scipy, pygments, protobuf, pluggy, pillow, ninja, markdown, joblib, iniconfig, grpcio, absl-py, tensorboard, scikit-learn, pytest
+
+
+Successfully installed absl-py-2.4.0 grpcio-1.80.0 iniconfig-2.3.0 joblib-1.5.3 markdown-3.10.2 ninja-1.13.0 pillow-12.2.0 pluggy-1.6.0 protobuf-7.34.1 pygments-2.20.0 pytest-9.0.3 scikit-learn-1.8.0 scipy-1.17.1 tensorboard-2.20.0 tensorboard-data-server-0.7.2 threadpoolctl-3.6.0 werkzeug-3.1.8
+[step] install mamba stack
+Looking in indexes: https://pypi.org/simple, https://pypi.org/simple
+Requirement already satisfied: packaging in ./.venv-linux-2404/lib/python3.12/site-packages (26.1)
+Collecting einops
+  Downloading einops-0.8.2-py3-none-any.whl.metadata (13 kB)
+Collecting transformers
+  Downloading transformers-5.5.4-py3-none-any.whl.metadata (32 kB)
+Collecting huggingface-hub<2.0,>=1.5.0 (from transformers)
+  Downloading huggingface_hub-1.11.0-py3-none-any.whl.metadata (14 kB)
+Requirement already satisfied: numpy>=1.17 in ./.venv-linux-2404/lib/python3.12/site-packages (from transformers) (2.4.4)
+Collecting pyyaml>=5.1 (from transformers)
+  Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.4 kB)
+Collecting regex>=2025.10.22 (from transformers)
+  Downloading regex-2026.4.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (40 kB)
+Collecting tokenizers<=0.23.0,>=0.22.0 (from transformers)
+  Downloading tokenizers-0.22.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (7.3 kB)
+Collecting typer (from transformers)
+  Downloading typer-0.24.1-py3-none-any.whl.metadata (16 kB)
+Collecting safetensors>=0.4.3 (from transformers)
+  Downloading safetensors-0.7.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+Collecting tqdm>=4.27 (from transformers)
+  Downloading tqdm-4.67.3-py3-none-any.whl.metadata (57 kB)
+Requirement already satisfied: filelock>=3.10.0 in ./.venv-linux-2404/lib/python3.12/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (3.29.0)
+Requirement already satisfied: fsspec>=2023.5.0 in ./.venv-linux-2404/lib/python3.12/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (2026.3.0)
+Collecting hf-xet<2.0.0,>=1.4.3 (from huggingface-hub<2.0,>=1.5.0->transformers)
+  Downloading hf_xet-1.4.3-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (4.9 kB)
+Collecting httpx<1,>=0.23.0 (from huggingface-hub<2.0,>=1.5.0->transformers)
+  Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+Requirement already satisfied: typing-extensions>=4.1.0 in ./.venv-linux-2404/lib/python3.12/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers) (4.15.0)
+Collecting anyio (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers)
+  Downloading anyio-4.13.0-py3-none-any.whl.metadata (4.5 kB)
+Collecting certifi (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers)
+  Downloading certifi-2026.2.25-py3-none-any.whl.metadata (2.5 kB)
+Collecting httpcore==1.* (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers)
+  Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+Collecting idna (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers)
+  Downloading idna-3.11-py3-none-any.whl.metadata (8.4 kB)
+Collecting h11>=0.16 (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers)
+  Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting click>=8.2.1 (from typer->transformers)
+  Downloading click-8.3.2-py3-none-any.whl.metadata (2.6 kB)
+Collecting shellingham>=1.3.0 (from typer->transformers)
+  Downloading shellingham-1.5.4-py2.py3-none-any.whl.metadata (3.5 kB)
+Collecting rich>=12.3.0 (from typer->transformers)
+  Downloading rich-15.0.0-py3-none-any.whl.metadata (18 kB)
+Collecting annotated-doc>=0.0.2 (from typer->transformers)
+  Downloading annotated_doc-0.0.4-py3-none-any.whl.metadata (6.6 kB)
+Collecting markdown-it-py>=2.2.0 (from rich>=12.3.0->typer->transformers)
+  Downloading markdown_it_py-4.0.0-py3-none-any.whl.metadata (7.3 kB)
+Requirement already satisfied: pygments<3.0.0,>=2.13.0 in ./.venv-linux-2404/lib/python3.12/site-packages (from rich>=12.3.0->typer->transformers) (2.20.0)
+Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=12.3.0->typer->transformers)
+  Downloading mdurl-0.1.2-py3-none-any.whl.metadata (1.6 kB)
+Downloading einops-0.8.2-py3-none-any.whl (65 kB)
+Downloading transformers-5.5.4-py3-none-any.whl (10.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.2/10.2 MB 60.1 MB/s  0:00:00
+
+Downloading huggingface_hub-1.11.0-py3-none-any.whl (645 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 645.5/645.5 kB 6.9 MB/s  0:00:00
+
+Downloading hf_xet-1.4.3-cp37-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (4.2 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.2/4.2 MB 98.0 MB/s  0:00:00
+
+Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+Downloading tokenizers-0.22.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 92.1 MB/s  0:00:00
+
+Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+Downloading pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (807 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 807.9/807.9 kB 124.2 MB/s  0:00:00
+
+Downloading regex-2026.4.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (801 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 801.1/801.1 kB 87.8 MB/s  0:00:00
+
+Downloading safetensors-0.7.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (507 kB)
+Downloading tqdm-4.67.3-py3-none-any.whl (78 kB)
+Downloading anyio-4.13.0-py3-none-any.whl (114 kB)
+Downloading idna-3.11-py3-none-any.whl (71 kB)
+Downloading certifi-2026.2.25-py3-none-any.whl (153 kB)
+Downloading typer-0.24.1-py3-none-any.whl (56 kB)
+Downloading annotated_doc-0.0.4-py3-none-any.whl (5.3 kB)
+Downloading click-8.3.2-py3-none-any.whl (108 kB)
+Downloading rich-15.0.0-py3-none-any.whl (310 kB)
+Downloading markdown_it_py-4.0.0-py3-none-any.whl (87 kB)
+Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Downloading shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)
+Installing collected packages: tqdm, shellingham, safetensors, regex, pyyaml, mdurl, idna, hf-xet, h11, einops, click, certifi, annotated-doc, markdown-it-py, httpcore, anyio, rich, httpx, typer, huggingface-hub, tokenizers, transformers
+
+
+Successfully installed annotated-doc-0.0.4 anyio-4.13.0 certifi-2026.2.25 click-8.3.2 einops-0.8.2 h11-0.16.0 hf-xet-1.4.3 httpcore-1.0.9 httpx-0.28.1 huggingface-hub-1.11.0 idna-3.11 markdown-it-py-4.0.0 mdurl-0.1.2 pyyaml-6.0.3 regex-2026.4.4 rich-15.0.0 safetensors-0.7.0 shellingham-1.5.4 tokenizers-0.22.2 tqdm-4.67.3 transformers-5.5.4 typer-0.24.1
+[info] installing triton (not provided by current torch metadata in this env)
+Looking in indexes: https://pypi.org/simple, https://pypi.org/simple
+Collecting triton
+  Downloading triton-3.6.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (1.7 kB)
+Downloading triton-3.6.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (188.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 188.3/188.3 MB 85.1 MB/s  0:00:02
+
+Installing collected packages: triton
+Successfully installed triton-3.6.0
+Looking in indexes: https://pypi.org/simple, https://pypi.org/simple
+Collecting causal-conv1d>=1.4.0
+  Downloading causal_conv1d-1.6.1.tar.gz (29 kB)
+  Preparing metadata (pyproject.toml): started
+  Preparing metadata (pyproject.toml): finished with status 'error'
+  error: subprocess-exited-with-error
+  
+  × Preparing metadata (pyproject.toml) did not run successfully.
+  │ exit code: 1
+  ╰─> [23 lines of output]
+      /workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/.venv-linux-2404/lib/python3.12/site-packages/wheel/bdist_wheel.py:4: FutureWarning: The 'wheel' package is no longer the canonical location of the 'bdist_wheel' command, and will be removed in a future release. Please update to setuptools v70.1 or later which contains an integrated version of this command.
+        warn(
+      <string>:119: UserWarning: causal_conv1d was requested, but nvcc was not found.  Are you sure your environment has nvcc available?  If you're installing within a container from https://hub.docker.com/r/pytorch/pytorch, only images whose names contain 'devel' will provide nvcc.
+      
+      
+      torch.__version__  = 2.11.0+cpu
+      
+      
+      Traceback (most recent call last):
+        File "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/.venv-linux-2404/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 389, in <module>
+          main()
+        File "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/.venv-linux-2404/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 373, in main
+          json_out["return_val"] = hook(**hook_input["kwargs"])
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/.venv-linux-2404/lib/python3.12/site-packages/pip/_vendor/pyproject_hooks/_in_process/_in_process.py", line 175, in prepare_metadata_for_build_wheel
+          return hook(metadata_directory, config_settings)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        File "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/.venv-linux-2404/lib/python3.12/site-packages/setuptools/build_meta.py", line 380, in prepare_metadata_for_build_wheel
+          self.run_setup()
+        File "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/.venv-linux-2404/lib/python3.12/site-packages/setuptools/build_meta.py", line 317, in run_setup
+          exec(code, locals())
+        File "<string>", line 176, in <module>
+      NameError: name 'bare_metal_version' is not defined
+      [end of output]
+  
+  note: This error originates from a subprocess, and is likely not a problem with pip.
+error: metadata-generation-failed
+
+× Encountered error while generating package metadata.
+╰─> causal-conv1d
+
+note: This is an issue with the package mentioned above, not pip.
+hint: See above for details.

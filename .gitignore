@@ -31,26 +31,8 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
-# ── Stage A datasets (`data/`) are tracked in git for Colab clone-and-run.
-data/*_bev_cache/
-
-# ── Runtime / logs / checkpoints produced by training ──────────────────
-# Track `runs/` (configs, metrics, checkpoints, logs). Root-level `checkpoints/` only.
-logs/
-wandb/
-tb_logs/
-lightning_logs/
-/checkpoints/
-*.log
-!runs/**/*.log
-
-# ── Large model artifacts (keep KITTI pretrained intentionally) ────────
-# PointPillars_module/pretrained/epoch_160.pth is intentionally TRACKED.
-# Any other checkpoint files elsewhere are ignored:
-*.ckpt
-*.pt
-!PointPillars_module/pretrained/*.pth
-!runs/**/*.pt
+# ── Derived BEV / feature caches (large; regenerate locally) ────────────
+**/*_bev_cache/
 
 # ── Secrets ────────────────────────────────────────────────────────────
 .env
