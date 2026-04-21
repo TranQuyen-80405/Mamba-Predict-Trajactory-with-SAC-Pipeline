@@ -44,8 +44,9 @@ def focal_bce(
     If ``valid_mask`` is (B, K) with values in {0, 1}, masked elements are
     omitted from the mean (truncated-lookahead frames / per-horizon drops).
 
-    ``label_smoothing`` (0–0.5) is passed to ``binary_cross_entropy_with_logits``
-    to soften hard 0/1 targets (reduces overconfidence).
+    ``label_smoothing`` (0–0.5) pulls hard 0/1 targets toward 0.5 (multi-label
+    BCE). Implemented without ``label_smoothing=`` on ``binary_cross_entropy_with_logits``
+    for PyTorch builds that omit that keyword.
     """
     if logits.shape != targets.shape:
         raise ValueError(
@@ -56,11 +57,11 @@ def focal_bce(
     if ls < 0.0 or ls > 0.5:
         raise ValueError(f"label_smoothing must be in [0, 0.5]; got {ls}")
 
-    # BCE with logits gives us -log(p_t) per element (numerically stable).
-    bce_kw: dict = {"reduction": "none"}
+    t = targets.to(dtype=logits.dtype)
     if ls > 0.0:
-        bce_kw["label_smoothing"] = ls
-    bce = F.binary_cross_entropy_with_logits(logits, targets, **bce_kw)
+        t = t * (1.0 - ls) + 0.5 * ls
+    # BCE with logits gives us -log(p_t) per element (numerically stable).
+    bce = F.binary_cross_entropy_with_logits(logits, t, reduction="none")
 
     if gamma == 0.0:
         focal = bce

@@ -42,8 +42,16 @@ for _p in (_PKG_ROOT, _REPO_ROOT, _REPO_ROOT / "create_dataset_module"):
     if s not in sys.path:
         sys.path.insert(0, s)
 
-if os.environ.get("TORCH_SHARING_STRATEGY", "").lower() == "file_system":
+_sharing_env = os.environ.get("TORCH_SHARING_STRATEGY", "").lower()
+if _sharing_env == "file_system":
     mp.set_sharing_strategy("file_system")
+elif int(os.environ.get("WORLD_SIZE", "1")) > 1:
+    # DDP + DataLoader workers can exhaust /dev/shm in containers.
+    # file_system sharing changes only tensor transport backend (not numerics).
+    try:
+        mp.set_sharing_strategy("file_system")
+    except RuntimeError:
+        pass
 
 from losses import focal_bce  # noqa: E402
 from module_pointpillar import PointPillarsNeckExtractor  # noqa: E402
@@ -223,8 +231,9 @@ def collect_val_metrics(
     if measure_inference_latency and device.type == "cuda":
         infer_time_s = infer_ms_total / 1000.0
 
+    rank = dist.get_rank() if is_dist else 0
     if is_dist:
-        gather_list: List[Any] = [None for _ in range(dist.get_world_size())]
+        world_size = dist.get_world_size()
         local_payload = {
             "logits": torch.cat(logits_all, dim=0) if logits_all else None,
             "targets": torch.cat(t_all, dim=0) if t_all else None,
@@ -232,14 +241,24 @@ def collect_val_metrics(
             "traj_pred": torch.cat(traj_pred_all, dim=0) if traj_pred_all else None,
             "traj_gt": torch.cat(traj_gt_all, dim=0) if traj_gt_all else None,
         }
-        dist.all_gather_object(gather_list, local_payload)
-        logits_all = [g["logits"] for g in gather_list if g.get("logits") is not None]
-        t_all = [g["targets"] for g in gather_list if g.get("targets") is not None]
-        valid_all = [g["valid"] for g in gather_list if g.get("valid") is not None]
-        traj_pred_all = [
-            g["traj_pred"] for g in gather_list if g.get("traj_pred") is not None
-        ]
-        traj_gt_all = [g["traj_gt"] for g in gather_list if g.get("traj_gt") is not None]
+        if rank == 0:
+            gathered: List[Any] = [None for _ in range(world_size)]
+            dist.gather_object(local_payload, gathered, dst=0)
+            logits_all = [g["logits"] for g in gathered if g.get("logits") is not None]
+            t_all = [g["targets"] for g in gathered if g.get("targets") is not None]
+            valid_all = [g["valid"] for g in gathered if g.get("valid") is not None]
+            traj_pred_all = [
+                g["traj_pred"] for g in gathered if g.get("traj_pred") is not None
+            ]
+            traj_gt_all = [g["traj_gt"] for g in gathered if g.get("traj_gt") is not None]
+        else:
+            # Only rank-0 keeps full validation tensors to avoid N-way RAM duplication.
+            dist.gather_object(local_payload, None, dst=0)
+            logits_all = []
+            t_all = []
+            valid_all = []
+            traj_pred_all = []
+            traj_gt_all = []
         if measure_inference_latency:
             t_buf = torch.tensor(
                 [infer_time_s, float(infer_n)], dtype=torch.float64, device=device
@@ -247,6 +266,10 @@ def collect_val_metrics(
             dist.all_reduce(t_buf, op=dist.ReduceOp.SUM)
             infer_time_s = float(t_buf[0].item())
             infer_n = int(t_buf[1].item())
+        if rank != 0:
+            out_list: List[Any] = [None]
+            dist.broadcast_object_list(out_list, src=0)
+            return out_list[0]
 
     if not logits_all:
         # Validation split can be empty after scene split + window filtering
@@ -273,6 +296,9 @@ def collect_val_metrics(
             "returning NaN metrics.",
             flush=True,
         )
+        if is_dist:
+            out_list = [out_empty]
+            dist.broadcast_object_list(out_list, src=0)
         return out_empty
 
     logits_cat = torch.cat(logits_all, dim=0).numpy()
@@ -319,6 +345,9 @@ def collect_val_metrics(
     )
     if measure_inference_latency and infer_n > 0:
         out["val_inference_ms_per_sample"] = (infer_time_s / float(infer_n)) * 1000.0
+    if is_dist:
+        out_list = [out]
+        dist.broadcast_object_list(out_list, src=0)
     return out
 
 
@@ -523,11 +552,31 @@ def run_stage_a_training(
             weights, num_samples=len(train_ds), replacement=True
         )
 
+    requested_num_workers = int(num_workers)
+    effective_num_workers = requested_num_workers
+    if is_dist and requested_num_workers > 0:
+        # In many containerized setups /dev/shm is tiny; DDP + worker IPC can crash
+        # with "unable to allocate shared memory(shm)". Falling back to 0 workers
+        # preserves numerics and only affects data-loading throughput.
+        try:
+            st = os.statvfs("/dev/shm")
+            shm_free_bytes = int(st.f_bavail) * int(st.f_frsize)
+        except OSError:
+            shm_free_bytes = -1
+        if 0 <= shm_free_bytes < (2 * 1024**3):
+            effective_num_workers = 0
+            if is_main:
+                print(
+                    "[stage_a_single_run] /dev/shm is low; forcing num_workers=0 "
+                    f"(requested={requested_num_workers}) to avoid DataLoader shm crashes.",
+                    flush=True,
+                )
+
     use_file_system_sharing = (
         os.environ.get("TORCH_SHARING_STRATEGY", "").lower() == "file_system"
     )
     _dl_kwargs: Dict[str, Any] = {}
-    if num_workers > 0:
+    if effective_num_workers > 0:
         _dl_kwargs["persistent_workers"] = (not use_file_system_sharing)
         _dl_kwargs["prefetch_factor"] = 1 if use_file_system_sharing else 2
 
@@ -536,7 +585,7 @@ def run_stage_a_training(
         batch_size=batch_size,
         sampler=train_sampler,
         shuffle=False,
-        num_workers=num_workers,
+        num_workers=effective_num_workers,
         collate_fn=collate_riskbatch,
         pin_memory=(dev.type == "cuda" and not use_file_system_sharing),
         **_dl_kwargs,
@@ -546,7 +595,7 @@ def run_stage_a_training(
         batch_size=batch_size,
         sampler=val_sampler,
         shuffle=False,
-        num_workers=num_workers,
+        num_workers=effective_num_workers,
         collate_fn=collate_riskbatch,
         pin_memory=(dev.type == "cuda" and not use_file_system_sharing),
         **_dl_kwargs,

@@ -570,19 +570,20 @@ Implementation: `PointPillars_module/losses.py`.
 
 ### 5.4 Sub-stages
 
-**A1 — warm-up (5 epochs):**
+**A1 — default compare profile (current repo defaults):**
 - PointPillars: **frozen** (load KITTI weights via `module_pointpillar.PointPillarsNeckExtractor`).
 - Trainable: `SpatialReducer`, `Mamba`, `RiskHead`.
-- Optimizer: AdamW, `lr = 3e-4`, `weight_decay = 1e-4`.
+- Optimizer: AdamW, `lr = 5e-5`, `weight_decay = 0.05`.
 - Scheduler (implemented in `training/stage_a_single_run.py`): **linear LR warmup for 500 optimizer steps**, then **cosine decay** to `eta_min` over the remaining optimizer steps in the run (not per-epoch cosine on epoch count).
-- Defaults for backbone comparison: `T_ctx = 40` (2.0 s @ 20 Hz), `batch_size = 32`, `gradient_accumulation_steps = 2` (effective batch 64), `epochs = 20`, early stopping on `val ap_risk_1s` with patience 5.
+- Defaults for backbone comparison: `T_ctx = 40` (2.0 s @ 20 Hz), `batch_size = 32`, `gradient_accumulation_steps = 2` (effective batch 64), `epochs = 20`, early stopping on `val ap_risk_1s` with patience 8 (`min_delta = 0.0`).
+- Training defaults also enable `risk_label_smoothing = 0.05` and `temporal_dropout = 0.1`.
 - Batch: 32 (T4) / 64 (A100).
 
-**A2 — neck unfreeze (5 epochs):**
+**A2 — neck unfreeze (current code defaults):**
 - PointPillars: unfreeze `neck` only. Still freeze `pillar_layer`, `pillar_encoder`, `backbone` (they contain voxelization and the most transferable spatial filters).
 - Two param groups:
-  - `g1`: neck params → `lr = 3e-5`.
-  - `g2`: SpatialReducer + Mamba + RiskHead → `lr = 1e-4`.
+  - `g1`: neck params → `lr = 5e-6`.
+  - `g2`: SpatialReducer + Mamba + RiskHead → `lr = 1.67e-5`.
 - Don't forget `neck.eval()` **only if** you want BatchNorm frozen — in A2 we want BN to adapt, so keep `neck.train()`.
 
 ### 5.5 Metrics (log every 500 iter)
@@ -1072,6 +1073,7 @@ If any hit is NOT a deliberate historical note, fix before merging.
 
 | Date       | Author | Change                                              |
 |------------|--------|-----------------------------------------------------|
+| 2026-04-21 | v4.1   | Synced Stage A sub-stage defaults with current training code: A1 compare profile now reflects `lr=5e-5`, `weight_decay=0.05`, early-stop patience `8`, plus `risk_label_smoothing=0.05` and `temporal_dropout=0.1`; A2 default LR groups updated to neck `5e-6` and rest `1.67e-5`. |
 | 2026-04-18 | init   | First version. 2-stage pipeline spec.               |
 | 2026-04-18 | v2     | First split into state-branch + risk-branch architecture (superseded by v3). |
 | 2026-04-18 | v3     | **Pipeline simplification** after stakeholder clarified that PointPillars is NOT used as SAC state — it is purely a dense reward function. Changes: (1) removed `BEVStateExtractor` and the "state branch" entirely; (2) Actor/Critic are now plain MLPs on a `ProprioState` vector (base lin/ang vel + goal relative + heading); (3) entire perception stream is frozen in Stage B — optimizer has 3 param groups, no encoder updates; (4) replay buffer stores only proprio states + actions + decomposed rewards (~500 MB for 1 M transitions); (5) framed explicitly as an **A/B test** (`r = r_env` vs `r = r_env + r_risk`) to measure the value of the pretrained risk predictor; (6) added explicit Mamba streaming spec (§6.4.2, `MambaStreamer`) at 20 Hz; (7) Stage B-plus (§6.8) updated — it still leaves the SAC path as proprio-MLP; only the perception stream is unfrozen. |

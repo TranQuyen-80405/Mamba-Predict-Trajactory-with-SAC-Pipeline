@@ -202,9 +202,9 @@ Finally **`mean`** over all batch and horizon dimensions.
 | Phase | PointPillars trainable? | Trainable modules | Notes |
 |-------|-------------------------|-------------------|--------|
 | **A1** | **Frozen** (KITTI weights) | `SpatialReducer`, `MambaTemporal`, `RiskHead` | `pp.freeze_all()`; use `extract_neck_forward` so gradients reach reducer/Mamba/head |
-| **A2** | **`neck` only** | `pp.neck` + same as A1 | `set_trainable(["neck"])` or `unfreeze_neck()` after `freeze_all()`; two LR groups (neck **\(3\times 10^{-5}\)**, others **\(10^{-4}\)** per `strategy_full_pipeline.md` §5.4) |
+| **A2** | **`neck` only** | `pp.neck` + same as A1 | `set_trainable(["neck"])` or `unfreeze_neck()` after `freeze_all()`; two LR groups (current defaults: neck **\(5\times 10^{-6}\)**, others **\(1.67\times 10^{-5}\)**) |
 
-Optimizer recipe (A1 reference): **AdamW**, **`lr = 3\times 10^{-4}`**, **`weight_decay = 10^{-4}`**, cosine with warmup **500** iterations.
+Current compare defaults (`training/stage_a_single_run.py` / `training/train_stage_a_compare.py`): **AdamW**, **`lr = 5\times 10^{-5}`**, **`weight_decay = 0.05`**, `epochs=20`, `batch_size=32`, `gradient_accumulation_steps=2`, `T_ctx=40`, early-stop patience `8`, warmup **500 optimizer steps** then cosine decay. Regularization defaults: `risk_label_smoothing=0.05`, `temporal_dropout=0.1`.
 
 ### 5.4 Training step (contract)
 
@@ -274,6 +274,7 @@ Stage B-plus (optional, `strategy_full_pipeline.md` §6.8) may add auxiliary los
 
 | Date | Version | Summary |
 |------|---------|---------|
+| 2026-04-21 | v1.1 | Synced Stage A defaults to current repo: compare profile now documents `epochs=20`, `lr=5e-5`, `weight_decay=0.05`, `T_ctx=40`, accumulation `2`, early-stop patience `8`, and current A2 LR groups (`5e-6` / `1.67e-5`). |
 | 2026-04-18 | v1.0 | Initial **Stage A training bible** — consolidates §3–§5 contracts, `FullPipeline` tensor shapes, focal loss, A1/A2, lookahead labeling, and Stage B **\(r_\mathrm{risk}\)** interface; explicit **no SAC input from \(h_T\)** invariant. |
 | 2026-04-18 | v1.0.1 | §7 file index: cross-link `strategy_experiment_protocol.md` for downscaled method-comparison runs. |
 | 2026-04-18 | v1.0.2 | §7: cross-link `optimized_training_strategy_stage_A.md` (BEV caching, decoupled training, paper tables). |
