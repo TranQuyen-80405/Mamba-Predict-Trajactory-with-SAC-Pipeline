@@ -1,0 +1,22 @@
+{
+  "traj_rmse_all": 0.780458827745555,
+  "traj_ade_xy_m": 0.35405694331163173,
+  "traj_fde_xy_m": 0.37761754615754145,
+  "traj_rmse_yaw_rad": 1.2862840652325023,
+  "ap_risk_05s": 0.4070298887771909,
+  "auc_risk_05s": 0.6134789398741445,
+  "ap_risk_1s": 0.3116843195683502,
+  "auc_risk_1s": 0.5581768474382679,
+  "ap_risk_2s": 0.20953963383002108,
+  "auc_risk_2s": 0.48642356972586415,
+  "brier_risk_avg": 0.20943758885065714,
+  "val_inference_ms_per_sample": 13.445948150422838,
+  "backbone": "mamba",
+  "stage": "a1",
+  "run_name": "mamba_20260420_235441",
+  "epochs_run": 1,
+  "epochs_requested": 1,
+  "best_epoch": 1,
+  "early_stopped": false,
+  "best_ap_risk_1s": 0.3116843195683502
+}

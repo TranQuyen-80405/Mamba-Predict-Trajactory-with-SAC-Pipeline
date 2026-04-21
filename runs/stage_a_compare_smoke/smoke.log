@@ -1,0 +1,82 @@
+W0420 23:54:37.570000 311342 torch/distributed/run.py:851] 
+W0420 23:54:37.570000 311342 torch/distributed/run.py:851] *****************************************
+W0420 23:54:37.570000 311342 torch/distributed/run.py:851] Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+W0420 23:54:37.570000 311342 torch/distributed/run.py:851] *****************************************
+pybullet build time: Apr 20 2026 14:38:59
+pybullet build time: Apr 20 2026 14:38:59
+/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/.venv-linux-2404/lib/python3.12/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[rank0]:[W420 23:54:40.849680927 ProcessGroupNCCL.cpp:5188] Guessing device ID based on global rank. This can cause a hang if rank to GPU mapping is heterogeneous. You can specify device_id in init_process_group()
+[stage_a_single_run] CUDA memory <= 16 GiB: if OOM, try --batch_size 16 and/or higher --gradient_accumulation_steps.
+[stage_a_single_run] CUDA memory <= 16 GiB: if OOM, try --batch_size 16 and/or higher --gradient_accumulation_steps.
+[MambaTemporal] backend=mamba d_model=256 n_blocks=2
+[MambaTemporal] backend=mamba d_model=256 n_blocks=2
+[mamba_20260420_235441] temporal backbone ONLY trainable parameters (fair compare): 876544
+[mamba_runtime] MambaTemporal backend='mamba' train_device=cuda:0 torch.cuda.is_available()=True
+[mamba_20260420_235441] total AdamW trainable parameters: 3037857
+/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/.venv-linux-2404/lib/python3.12/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[mamba_20260420_235441] epoch 1/1 micro_batch 100/1223 loss=0.2915
+[mamba_20260420_235441] epoch 1/1 micro_batch 200/1223 loss=0.2433
+[mamba_20260420_235441] epoch 1/1 micro_batch 300/1223 loss=0.5207
+[mamba_20260420_235441] epoch 1/1 micro_batch 400/1223 loss=0.4228
+[mamba_20260420_235441] epoch 1/1 micro_batch 500/1223 loss=0.4269
+[mamba_20260420_235441] epoch 1/1 micro_batch 600/1223 loss=0.9484
+[mamba_20260420_235441] epoch 1/1 micro_batch 700/1223 loss=0.3165
+[mamba_20260420_235441] epoch 1/1 micro_batch 800/1223 loss=0.0955
+[mamba_20260420_235441] epoch 1/1 micro_batch 900/1223 loss=0.3135
+[mamba_20260420_235441] epoch 1/1 micro_batch 1000/1223 loss=0.2333
+[mamba_20260420_235441] epoch 1/1 micro_batch 1100/1223 loss=0.5663
+[mamba_20260420_235441] epoch 1/1 micro_batch 1200/1223 loss=0.7224
+[mamba_20260420_235441] epoch 1/1 train_loss=0.3388 val_ap_risk_05s=0.4070 val_ap_risk_1s=0.3117 val_ADE_xy=0.3541 val_latency_ms/sample=13.446
+/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/.venv-linux-2404/lib/python3.12/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[mamba_20260420_235441] Best-val checkpoint: mamba_risk_1epochs_mamba_20260420_235441_best_val_ap.pt + mamba_risk_best_val_ap.pt
+[mamba_20260420_235441] Last-epoch checkpoints: mamba_risk_1epochs_mamba_20260420_235441_last.pt + mamba_risk_latest.pt (under runs/stage_a_compare_smoke/checkpoints/mamba_risk_1epochs)
+
+TensorBoard: tensorboard --logdir runs/stage_a_compare_smoke/mamba_20260420_235441
+Metrics: runs/stage_a_compare_smoke/mamba_20260420_235441/metrics.jsonl
+Validation inference latency (best-val snapshot): 13.4459 ms/sample
+[stage_a_single_run] CUDA memory <= 16 GiB: if OOM, try --batch_size 16 and/or higher --gradient_accumulation_steps.
+[stage_a_single_run] CUDA memory <= 16 GiB: if OOM, try --batch_size 16 and/or higher --gradient_accumulation_steps.
+[MambaTemporal] backend=gru d_model=256 n_blocks=2
+[MambaTemporal] backend=gru d_model=256 n_blocks=2
+[gru_20260421_003624] temporal backbone ONLY trainable parameters (fair compare): 789504
+[mamba_runtime] MambaTemporal backend='gru' train_device=cuda:0 torch.cuda.is_available()=True
+[mamba_runtime] Using GRU fallback inside MambaTemporal (mamba-ssm unavailable, import failed, or backend='gru').
+[gru_20260421_003624] total AdamW trainable parameters: 2950817
+[gru_20260421_003624] epoch 1/1 micro_batch 100/1223 loss=0.2884
+[gru_20260421_003624] epoch 1/1 micro_batch 200/1223 loss=0.2377
+[gru_20260421_003624] epoch 1/1 micro_batch 300/1223 loss=0.4963
+[gru_20260421_003624] epoch 1/1 micro_batch 400/1223 loss=0.4258
+[gru_20260421_003624] epoch 1/1 micro_batch 500/1223 loss=0.4187
+[gru_20260421_003624] epoch 1/1 micro_batch 600/1223 loss=0.9377
+[gru_20260421_003624] epoch 1/1 micro_batch 700/1223 loss=0.3119
+[gru_20260421_003624] epoch 1/1 micro_batch 800/1223 loss=0.0993
+[gru_20260421_003624] epoch 1/1 micro_batch 900/1223 loss=0.3007
+[gru_20260421_003624] epoch 1/1 micro_batch 1000/1223 loss=0.2235
+[gru_20260421_003624] epoch 1/1 micro_batch 1100/1223 loss=0.5442
+[gru_20260421_003624] epoch 1/1 micro_batch 1200/1223 loss=0.7227
+[gru_20260421_003624] epoch 1/1 train_loss=0.3382 val_ap_risk_05s=0.3514 val_ap_risk_1s=0.3260 val_ADE_xy=0.3536 val_latency_ms/sample=20.455
+/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/.venv-linux-2404/lib/python3.12/site-packages/torch/distributed/c10d_logger.py:83: UserWarning: barrier(): using the device under current context. You can specify `device_id` in `init_process_group` to mute this warning.
+  return func(*args, **kwargs)
+[gru_20260421_003624] Best-val checkpoint: gru_risk_1epochs_gru_20260421_003624_best_val_ap.pt + gru_risk_best_val_ap.pt
+[gru_20260421_003624] Last-epoch checkpoints: gru_risk_1epochs_gru_20260421_003624_last.pt + gru_risk_latest.pt (under runs/stage_a_compare_smoke/checkpoints/gru_risk_1epochs)
+
+TensorBoard: tensorboard --logdir runs/stage_a_compare_smoke/gru_20260421_003624
+Metrics: runs/stage_a_compare_smoke/gru_20260421_003624/metrics.jsonl
+Validation inference latency (best-val snapshot): 20.4552 ms/sample
+
+=== Risk (validation, best-val snapshot) ===
+model            AP@0.5s     AP@1s     AP@2s    AUC@1s     lat_ms
+mamba             0.4070    0.3117    0.2095    0.5582     13.446
+gru               0.3514    0.3260    0.2257    0.5609     20.455
+
+=== Trajectory forecast (validation, best-val snapshot) ===
+model            RMSE_all   ADE_xy_m   FDE_xy_m   RMSE_yaw
+mamba              0.7805     0.3541     0.3776     1.2863
+gru                0.7803     0.3536     0.3829     1.2864
+
+TensorBoard: tensorboard --logdir runs/stage_a_compare_smoke
+Wrote runs/stage_a_compare_smoke/summary_20260421_011432.json
+[rank0]:[W421 01:14:33.668997667 ProcessGroupNCCL.cpp:1575] Warning: WARNING: destroy_process_group() was not called before program exit, which can leak resources. For more info, please see https://pytorch.org/docs/stable/distributed.html#shutdown (function operator())

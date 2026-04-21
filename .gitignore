@@ -35,13 +35,14 @@ Desktop.ini
 data/*_bev_cache/
 
 # ── Runtime / logs / checkpoints produced by training ──────────────────
-runs/
+# Track `runs/` (configs, metrics, checkpoints, logs). Root-level `checkpoints/` only.
 logs/
 wandb/
 tb_logs/
 lightning_logs/
-checkpoints/
+/checkpoints/
 *.log
+!runs/**/*.log
 
 # ── Large model artifacts (keep KITTI pretrained intentionally) ────────
 # PointPillars_module/pretrained/epoch_160.pth is intentionally TRACKED.
@@ -49,6 +50,7 @@ checkpoints/
 *.ckpt
 *.pt
 !PointPillars_module/pretrained/*.pth
+!runs/**/*.pt
 
 # ── Secrets ────────────────────────────────────────────────────────────
 .env

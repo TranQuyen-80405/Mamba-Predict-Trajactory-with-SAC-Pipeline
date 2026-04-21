@@ -1,0 +1,9 @@
+{
+  "early_stopped": true,
+  "epochs_run": 6,
+  "epochs_requested": 30,
+  "patience": 5,
+  "min_delta": 0.0,
+  "best_epoch": 1,
+  "best_ap_risk_1s": 0.38912023080572344
+}
