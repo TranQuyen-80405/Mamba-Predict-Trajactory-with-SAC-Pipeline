@@ -32,6 +32,7 @@ Desktop.ini
 .DS_Store
 
 # ── Stage A datasets (`data/`) are tracked in git for Colab clone-and-run.
+data/*_bev_cache/
 
 # ── Runtime / logs / checkpoints produced by training ──────────────────
 runs/

@@ -53,12 +53,14 @@ class MambaTemporal(nn.Module):
         expand: int = 2,
         n_blocks: int = 2,
         backend: _BackendName = "auto",
+        dropout: float = 0.0,
     ) -> None:
         super().__init__()
         self.d_model = d_model
         self.d_state = d_state
         self.expand = expand
         self.n_blocks = n_blocks
+        self.dropout_p = float(dropout)
         # Streaming cache length for backend="mamba" step(). We keep a bounded
         # token history so state carries across calls without unbounded growth.
         self._stream_cache_len = 256
@@ -70,7 +72,7 @@ class MambaTemporal(nn.Module):
         # One-time visibility: useful on Colab startup to confirm that
         # mamba-ssm actually loaded instead of silently falling back.
         print(f"[MambaTemporal] backend={self.backend} d_model={d_model} "
-              f"n_blocks={n_blocks}")
+              f"n_blocks={n_blocks} dropout={self.dropout_p}")
 
     # ---------- construction helpers ----------
     @staticmethod
@@ -114,16 +116,22 @@ class MambaTemporal(nn.Module):
             self.norms = nn.ModuleList([
                 nn.LayerNorm(self.d_model) for _ in range(self.n_blocks)
             ])
+            self.dropouts = nn.ModuleList([
+                nn.Dropout(self.dropout_p) for _ in range(self.n_blocks)
+            ])
             self.gru = None  # type: ignore[assignment]
         elif backend == "gru":
+            gru_drop = self.dropout_p if self.n_blocks > 1 else 0.0
             self.gru = nn.GRU(
                 input_size=self.d_model,
                 hidden_size=self.d_model,
                 num_layers=self.n_blocks,
                 batch_first=True,
+                dropout=gru_drop,
             )
             self.blocks = None  # type: ignore[assignment]
             self.norms = None   # type: ignore[assignment]
+            self.dropouts = None  # type: ignore[assignment]
         else:  # pragma: no cover
             raise ValueError(f"unknown backend: {backend}")
 
@@ -144,8 +152,8 @@ class MambaTemporal(nn.Module):
             )
         if self.backend == "mamba":
             x = seq
-            for block, norm in zip(self.blocks, self.norms):  # type: ignore[arg-type]
-                x = x + block(norm(x))
+            for block, norm, drop in zip(self.blocks, self.norms, self.dropouts):  # type: ignore[arg-type]
+                x = x + drop(block(norm(x)))
             return x
         # GRU
         out, _ = self.gru(seq)  # type: ignore[misc]
@@ -205,7 +213,7 @@ class MambaTemporal(nn.Module):
         if cache.shape[1] > self._stream_cache_len:
             cache = cache[:, -self._stream_cache_len :, :]
         x = cache
-        for block, norm in zip(self.blocks, self.norms):  # type: ignore[arg-type]
-            x = x + block(norm(x))
+        for block, norm, drop in zip(self.blocks, self.norms, self.dropouts):  # type: ignore[arg-type]
+            x = x + drop(block(norm(x)))
         new_hidden = cache.detach()
         return x[:, -1, :], new_hidden

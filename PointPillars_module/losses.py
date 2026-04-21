@@ -1,7 +1,7 @@
 """
 Stage A losses.
 
-focal_bce(logits, targets, gamma=2.0, weight=(1.0, 0.8, 0.5), valid_mask=None)
+focal_bce(logits, targets, gamma=2.0, weight=(1.0, 0.8, 0.5), valid_mask=None, label_smoothing=0.0)
     Focal binary cross-entropy (§ 5.3 of docs/strategy_full_pipeline.md).
     * logits  : (B, K) raw outputs (no sigmoid).
     * targets : (B, K) float in {0, 1}.
@@ -32,6 +32,7 @@ def focal_bce(
     weight: Optional[Sequence[float]] = (1.0, 0.8, 0.5),
     valid_mask: Optional[torch.Tensor] = None,
     reduction: str = "mean",
+    label_smoothing: float = 0.0,
 ) -> torch.Tensor:
     """
     Focal BCE with logits. Per-sample, per-horizon loss is:
@@ -42,15 +43,24 @@ def focal_bce(
     With ``weight`` applied as a scalar multiplier per horizon column.
     If ``valid_mask`` is (B, K) with values in {0, 1}, masked elements are
     omitted from the mean (truncated-lookahead frames / per-horizon drops).
+
+    ``label_smoothing`` (0–0.5) is passed to ``binary_cross_entropy_with_logits``
+    to soften hard 0/1 targets (reduces overconfidence).
     """
     if logits.shape != targets.shape:
         raise ValueError(
             f"logits {tuple(logits.shape)} and targets {tuple(targets.shape)} "
             f"must match."
         )
+    ls = float(label_smoothing)
+    if ls < 0.0 or ls > 0.5:
+        raise ValueError(f"label_smoothing must be in [0, 0.5]; got {ls}")
 
     # BCE with logits gives us -log(p_t) per element (numerically stable).
-    bce = F.binary_cross_entropy_with_logits(logits, targets, reduction="none")
+    bce_kw: dict = {"reduction": "none"}
+    if ls > 0.0:
+        bce_kw["label_smoothing"] = ls
+    bce = F.binary_cross_entropy_with_logits(logits, targets, **bce_kw)
 
     if gamma == 0.0:
         focal = bce

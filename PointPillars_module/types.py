@@ -42,7 +42,7 @@ class PointPillarsConfig:
     max_num_points: int = 32
     max_voxels_train: int = 16000
     max_voxels_test: int = 40000
-    ckpt_path: str = "pretrained/epoch_160.pth"
+    ckpt_path: str = "pretrained/epoch_160_raw.pth"
     device: str = "cuda"
 
     @property

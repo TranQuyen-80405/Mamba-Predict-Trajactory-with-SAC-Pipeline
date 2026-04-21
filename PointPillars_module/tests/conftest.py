@@ -13,8 +13,11 @@ _PKG_ROOT = os.path.dirname(_HERE)
 if _PKG_ROOT not in sys.path:
     sys.path.insert(0, _PKG_ROOT)
 
-CKPT_PATH = os.path.join(_PKG_ROOT, "pretrained", "epoch_160.pth")
-HAS_CKPT = os.path.exists(CKPT_PATH)
+from pretrained_ckpt_resolve import resolve_pointpillars_ckpt  # noqa: E402
+
+_CKPT_RESOLVED = resolve_pointpillars_ckpt(_PKG_ROOT)
+CKPT_PATH = _CKPT_RESOLVED or os.path.join(_PKG_ROOT, "pretrained", "epoch_160_raw.pth")
+HAS_CKPT = _CKPT_RESOLVED is not None
 HAS_CUDA = torch.cuda.is_available()
 
 
@@ -31,7 +34,9 @@ def pytest_configure(config: pytest.Config) -> None:
 
 @pytest.fixture(scope="session")
 def ckpt_path() -> str:
-    return CKPT_PATH
+    if not HAS_CKPT or _CKPT_RESOLVED is None:
+        pytest.skip("missing pretrained/epoch_160_raw.pth or epoch_160.pth")
+    return _CKPT_RESOLVED
 
 
 @pytest.fixture(scope="session")

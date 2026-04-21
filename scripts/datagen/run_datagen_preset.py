@@ -8,6 +8,7 @@ Dùng khi Jupyter kernel không có torch: notebook gọi
 Presets:
   smoke_nb       — giống cell tuỳ chọn notebook (data/stage_a_smoke_nb)
   experiment     — bộ nhỏ để so sánh method (data/stage_a_experiment); xem docs/strategy_experiment_protocol.md
+  experiment_2gpu — bộ cân bằng nhãn risk cho train compare trên 2x 5060 Ti
   full           — dataset lớn (data/stage_a_full)
   rgb_spotcheck  — 1 scene × 1 rollout ngắn, save_rgb=True → data/stage_a_rgb_spotcheck
 """
@@ -60,6 +61,31 @@ def _cfg_experiment() -> DataGenConfig:
     )
 
 
+def _cfg_experiment_2gpu() -> DataGenConfig:
+    """
+    Balanced Stage-A comparison preset for dual mid-range GPUs.
+
+    Goals:
+      - more valid positives at 0.5s / 1s / 2s than ``experiment``
+      - still small enough to train 4 backbones in one run
+    """
+    return DataGenConfig(
+        out_dir=os.path.join(_HERE, "data", "stage_a_experiment_2gpu_balanced_v5"),
+        n_scenes=32,
+        rollouts_per_scene=4,
+        frames_per_rollout=220,
+        policy_random_p=0.75,
+        policy_scripted_p=0.20,
+        policy_adversarial_p=0.03,
+        policy_stationary_p=0.02,
+        camera_jitter_deg=0.0,
+        terminate_on_contact=True,
+        post_contact_grace_frames=20,
+        save_rgb=False,
+        seed=23,
+    )
+
+
 def _cfg_full() -> DataGenConfig:
     return DataGenConfig(
         out_dir=os.path.join(_HERE, "data", "stage_a_full"),
@@ -90,6 +116,7 @@ def _cfg_rgb_spotcheck() -> DataGenConfig:
 
 PRESETS = {
     "experiment": _cfg_experiment,
+    "experiment_2gpu": _cfg_experiment_2gpu,
     "smoke_nb": _cfg_smoke_nb,
     "full": _cfg_full,
     "rgb_spotcheck": _cfg_rgb_spotcheck,
@@ -101,7 +128,7 @@ def main() -> None:
     p.add_argument(
         "preset",
         choices=sorted(PRESETS.keys()),
-        help="Tên preset (experiment | smoke_nb | full | rgb_spotcheck)",
+        help="Tên preset (experiment | experiment_2gpu | smoke_nb | full | rgb_spotcheck)",
     )
     args = p.parse_args()
     cfg = PRESETS[args.preset]()

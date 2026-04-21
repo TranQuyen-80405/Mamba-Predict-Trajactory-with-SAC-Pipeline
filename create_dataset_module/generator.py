@@ -139,6 +139,19 @@ def _apply_camera_jitter(
     return out
 
 
+def _project_to_rotation(R: np.ndarray) -> np.ndarray:
+    """
+    Project a near-rotation matrix to SO(3) using SVD.
+    Keeps datagen robust against occasional numerical / API drift in extrinsics.
+    """
+    U, _, Vt = np.linalg.svd(R.astype(np.float64))
+    Rn = U @ Vt
+    if np.linalg.det(Rn) < 0.0:
+        U[:, -1] *= -1.0
+        Rn = U @ Vt
+    return Rn.astype(np.float32)
+
+
 # ---------------------------------------------------------------------
 # DataGenerator
 # ---------------------------------------------------------------------
@@ -287,6 +300,7 @@ class DataGenerator:
 
         T_actual = T_max
         contact_frame = -1
+        terminate_after_t: Optional[int] = None
         for t in range(T_max):
             rgb_t, depth_t, R_t, t_vec = env.get_camera_data()
 
@@ -301,6 +315,7 @@ class DataGenerator:
             R_t = _apply_camera_jitter(
                 R_t, cfg.camera_jitter_deg, dr_rng
             )
+            R_t = _project_to_rotation(R_t)
             # -----------------------------------------------------------
 
             depth[t] = depth_t.astype(np.float16)
@@ -327,10 +342,11 @@ class DataGenerator:
             # --- early termination (v3.3) ------------------------------
             if cfg.terminate_on_contact and contact[t] and contact_frame < 0:
                 contact_frame = t
-                # Keep `post_contact_grace_frames` extra frames so the
-                # risk_* lookahead windows near the contact still see
-                # "real" post-impact physics if the user wants it.
-                T_actual = min(T_max, t + 1 + cfg.post_contact_grace_frames)
+                # Keep `post_contact_grace_frames` extra frames and keep
+                # writing data until we actually reach that target frame.
+                terminate_after_t = min(T_max, t + 1 + cfg.post_contact_grace_frames)
+            if terminate_after_t is not None and (t + 1) >= terminate_after_t:
+                T_actual = int(terminate_after_t)
                 break
             # -----------------------------------------------------------
 

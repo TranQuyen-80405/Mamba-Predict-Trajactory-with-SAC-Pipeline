@@ -15,7 +15,9 @@ import sys
 from pathlib import Path
 from typing import Dict, List
 
+import numpy as np
 import torch
+import torch.nn.functional as F
 
 _HERE = Path(__file__).resolve().parent
 _ROOT = _HERE.parent
@@ -72,6 +74,32 @@ def main() -> None:
         choices=["float16", "float32"],
         help="Storage dtype for cached BEV tensors.",
     )
+    ap.add_argument(
+        "--spatial_downsample",
+        type=int,
+        default=2,
+        choices=[1, 2, 4],
+        help=(
+            "Optional spatial downsample factor on BEV before saving. "
+            "2 is default to keep cache size practical."
+        ),
+    )
+    ap.add_argument(
+        "--extrinsics_convention",
+        type=str,
+        default="auto",
+        choices=["auto", "pybullet_to_kitti", "opencv_to_kitti", "identity", "from_trajectory"],
+        help=(
+            "Depth->LiDAR convention for cache generation. "
+            "'auto' prefers trajectory extrinsics when available."
+        ),
+    )
+    ap.add_argument(
+        "--depth_scale_factor",
+        type=float,
+        default=1.0,
+        help="Scale multiplier for depth-derived xyz before PointPillars.",
+    )
     args = ap.parse_args()
 
     data_root = Path(args.data_root).resolve()
@@ -89,6 +117,7 @@ def main() -> None:
     extractor = PointPillarsNeckExtractor(pp_cfg)
     extractor.freeze_all()
     preprocess_cfg = _default_preprocess_cfg()
+    preprocess_cfg.scale_factor = float(args.depth_scale_factor)
 
     n_saved = 0
     n_skipped = 0
@@ -118,14 +147,36 @@ def main() -> None:
             out_path.parent.mkdir(parents=True, exist_ok=True)
 
             depth_m = traj.depth[tau].astype("float32")
-            extr = CameraToLidarExtrinsics(
-                R=traj.cam_extr_R[tau].astype("float32"),
-                t=traj.cam_extr_t[tau].astype("float32"),
-                convention="identity",
-            )
+            conv = str(args.extrinsics_convention)
+            if conv == "auto":
+                has_cam_extr = (
+                    hasattr(traj, "cam_extr_R")
+                    and hasattr(traj, "cam_extr_t")
+                    and len(traj.cam_extr_R) > tau
+                    and len(traj.cam_extr_t) > tau
+                )
+                conv = "from_trajectory" if has_cam_extr else "opencv_to_kitti"
+            if conv == "from_trajectory":
+                extr = CameraToLidarExtrinsics(
+                    R=traj.cam_extr_R[tau].astype("float32"),
+                    t=traj.cam_extr_t[tau].astype("float32"),
+                    convention="identity",
+                )
+            else:
+                extr = CameraToLidarExtrinsics(
+                    R=None,
+                    t=np.zeros(3, dtype=np.float32),
+                    convention=conv,
+                )
             pts = _preprocess_depth_to_pts(depth_m, intr, extr, preprocess_cfg)
             neck = extractor.extract_neck([pts])
-            bev = neck.feature.squeeze(0).detach().cpu().to(dtype).contiguous()
+            bev = neck.feature.squeeze(0).detach().cpu()
+            if int(args.spatial_downsample) > 1:
+                s = int(args.spatial_downsample)
+                bev = F.avg_pool2d(
+                    bev.unsqueeze(0), kernel_size=s, stride=s, ceil_mode=False
+                ).squeeze(0)
+            bev = bev.to(dtype).contiguous()
             torch.save(bev, out_path)
             n_saved += 1
 
@@ -135,6 +186,9 @@ def main() -> None:
         "ckpt": str(Path(args.ckpt).resolve()),
         "device": dev,
         "save_dtype": args.save_dtype,
+        "spatial_downsample": int(args.spatial_downsample),
+        "extrinsics_convention": args.extrinsics_convention,
+        "depth_scale_factor": float(args.depth_scale_factor),
         "n_trajectories": len(unique_traj),
         "n_saved_frames": n_saved,
         "n_skipped_existing": n_skipped,

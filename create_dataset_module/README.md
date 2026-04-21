@@ -66,6 +66,21 @@ For a **small** disk footprint (~0.2–0.5 GiB depth tree) suitable for comparin
 python run_datagen_preset.py experiment
 ```
 
+For a more balanced risk-label distribution (recommended when training Stage-A
+compare on dual mid-range GPUs), use:
+
+```bash
+python run_datagen_preset.py experiment_2gpu
+python run_dataset_stats.py --data_root data/stage_a_experiment_2gpu --T_ctx 20 --traj_horizon 10
+```
+
+Any time after generation, you can re-check dataset quality/statistics without
+re-running datagen:
+
+```bash
+python run_dataset_stats.py --data_root data/stage_a_experiment --T_ctx 40 --traj_horizon 10
+```
+
 Defaults and evaluation criteria: **`docs/strategy_experiment_protocol.md`**.
 
 ## Generating a bigger dataset

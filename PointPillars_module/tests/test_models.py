@@ -27,10 +27,11 @@ if _PKG_ROOT not in sys.path:
 from models.mamba_temporal import MambaTemporal, _try_import_mamba  # noqa: E402
 from models.risk_head import RiskHead  # noqa: E402
 from models.spatial_reducer import SpatialReducer  # noqa: E402
+from pretrained_ckpt_resolve import resolve_pointpillars_ckpt  # noqa: E402
 
-_CKPT = os.path.join(_PKG_ROOT, "pretrained", "epoch_160.pth")
+_CKPT = resolve_pointpillars_ckpt(_PKG_ROOT)
 _HAS_CUDA = torch.cuda.is_available()
-_HAS_CKPT = os.path.exists(_CKPT)
+_HAS_CKPT = _CKPT is not None
 _HAS_MAMBA = _try_import_mamba() is not None
 _CAN_RUN_MODEL = _HAS_CUDA and _HAS_CKPT
 
@@ -196,6 +197,7 @@ class TestFullPipeline(unittest.TestCase):
         from models.full_pipeline import FullPipeline
 
         cls._FullPipeline = FullPipeline
+        assert _CKPT is not None
         cfg = PointPillarsConfig(ckpt_path=_CKPT, device="cuda")
         cls._pp = PointPillarsNeckExtractor(cfg)
 

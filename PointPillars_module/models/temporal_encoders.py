@@ -67,7 +67,9 @@ class LSTMTemporal(nn.Module):
 class TransformerEncoderTemporal(nn.Module):
     """
     Causal Transformer encoder (library: torch.nn only).
-    Use LayerNorm-first blocks for stability on short sequences.
+
+    ``dropout`` is passed to ``nn.TransformerEncoderLayer`` and applies to both
+    multi-head attention and feed-forward (attention + residual paths).
     """
 
     def __init__(

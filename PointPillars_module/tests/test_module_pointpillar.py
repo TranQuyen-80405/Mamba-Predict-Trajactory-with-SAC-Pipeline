@@ -41,10 +41,11 @@ from module_pointpillar import (  # noqa: E402
     PointPillarsConfig,
     PointPillarsNeckExtractor,
 )
+from pretrained_ckpt_resolve import resolve_pointpillars_ckpt  # noqa: E402
 
-_CKPT = os.path.join(_PKG_ROOT, "pretrained", "epoch_160.pth")
+_CKPT = resolve_pointpillars_ckpt(_PKG_ROOT)
 _HAS_CUDA = torch.cuda.is_available()
-_HAS_CKPT = os.path.exists(_CKPT)
+_HAS_CKPT = _CKPT is not None
 _CAN_RUN_MODEL = _HAS_CUDA and _HAS_CKPT
 
 
@@ -229,7 +230,8 @@ class TestPreprocessScaleFactor(unittest.TestCase):
 
 @unittest.skipUnless(
     _CAN_RUN_MODEL,
-    f"Needs CUDA ({_HAS_CUDA}) and checkpoint ({_HAS_CKPT}) at {_CKPT}",
+    f"Needs CUDA ({_HAS_CUDA}) and checkpoint ({_HAS_CKPT}) at "
+    f"{_CKPT or os.path.join(_PKG_ROOT, 'pretrained', 'epoch_160_raw.pth')}",
 )
 class TestExtractorDeterminism(unittest.TestCase):
     """
@@ -241,6 +243,7 @@ class TestExtractorDeterminism(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        assert _CKPT is not None
         cls.extractor = PointPillarsNeckExtractor(
             PointPillarsConfig(ckpt_path=_CKPT, device="cuda")
         )

@@ -176,7 +176,7 @@ fi
 echo "[step] install project python deps"
 python -m pip install ninja pytest tensorboard scikit-learn
 
-if [[ "${INSTALL_MAMBA}" == "1" ]]; then
+if [[ "${INSTALL_MAMBA}" == "1" ]] && [[ "${TORCH_MODE}" != "cpu" ]]; then
   echo "[step] install mamba stack"
   # PyPI: unpinned "torch" can pull +cu130; also default pip *build isolation* installs its own torch in /tmp/pip-build-env-*
   # (often +cu130) → nvcc 12.9 vs torch 13.0 at compile. Use --no-deps and --no-build-isolation so the venv torch is used.
@@ -191,6 +191,8 @@ if [[ "${INSTALL_MAMBA}" == "1" ]]; then
   python -m pip install --no-cache-dir "mamba-ssm" \
     --extra-index-url https://pypi.org/simple --no-deps --no-build-isolation
   python -c "import torch; print('[post-mamba] torch:', torch.__version__, '| cuda:', torch.version.cuda)"
+elif [[ "${INSTALL_MAMBA}" == "1" ]]; then
+  echo "[warn] skipping mamba stack install on cpu mode (causal-conv1d/mamba-ssm need CUDA toolchain)"
 fi
 
 echo "[step] sanity checks"

@@ -1,29 +1,41 @@
-from setuptools import setup, find_packages
-from torch.utils.cpp_extension import BuildExtension, CUDAExtension
+import os
+
+import torch
+from setuptools import find_packages, setup
+from torch.utils.cpp_extension import BuildExtension, CppExtension, CUDAExtension, CUDA_HOME
+
+
+def _build_extension():
+    use_cuda = bool((CUDA_HOME and os.path.isdir(CUDA_HOME)) and (torch.version.cuda is not None))
+    if os.getenv("FORCE_CUDA", "0") == "1":
+        use_cuda = True
+
+    common_sources = [
+        "pointpillars/ops/voxelization/voxelization.cpp",
+        "pointpillars/ops/voxelization/voxelization_cpu.cpp",
+    ]
+    if use_cuda:
+        return CUDAExtension(
+            name="pointpillars.ops.voxel_op",
+            sources=common_sources + ["pointpillars/ops/voxelization/voxelization_cuda.cu"],
+            define_macros=[("WITH_CUDA", None)],
+            extra_compile_args={
+                "cxx": [],
+                "nvcc": ["-allow-unsupported-compiler"],
+            },
+        )
+
+    return CppExtension(
+        name="pointpillars.ops.voxel_op",
+        sources=common_sources,
+    )
+
 
 setup(
-    name='pointpillars',
-    version='0.1',
+    name="pointpillars",
+    version="0.1",
     packages=find_packages(),
-    ext_modules=[
-        CUDAExtension(
-            name='pointpillars.ops.voxel_op',
-            sources=[
-                'pointpillars/ops/voxelization/voxelization.cpp',
-                'pointpillars/ops/voxelization/voxelization_cpu.cpp',
-                'pointpillars/ops/voxelization/voxelization_cuda.cu',
-            ],
-            define_macros=[('WITH_CUDA', None)],
-            # -allow-unsupported-compiler lets nvcc build against MSVC
-            # toolsets newer than the CUDA version officially supports
-            # (e.g. MSVC 14.5x + CUDA 12.8). Required for the voxelization
-            # kernel to compile on Windows with VS 2026 preview toolchain.
-            extra_compile_args={
-                'cxx': [],
-                'nvcc': ['-allow-unsupported-compiler'],
-            },
-        ),
-    ],
-    cmdclass={'build_ext': BuildExtension},
-    zip_safe=False
+    ext_modules=[_build_extension()],
+    cmdclass={"build_ext": BuildExtension},
+    zip_safe=False,
 )

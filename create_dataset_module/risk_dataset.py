@@ -215,6 +215,7 @@ class RiskDataset(Dataset):
         self.preprocess_cfg = preprocess_cfg or _default_preprocess_cfg()
         self.extrinsics_convention = extrinsics_convention
         valid_conv = {
+            "auto",
             "pybullet_to_kitti",
             "opencv_to_kitti",
             "identity",
@@ -235,6 +236,10 @@ class RiskDataset(Dataset):
         # adjacent samples that share ``meta["path"]``.
         self._traj_cache: "OrderedDict[str, Trajectory]" = OrderedDict()
         self._traj_cache_max = 8
+        # Optional BEV-frame LRU cache (per worker process) to reduce heavy
+        # small-file I/O when BEV cache mode reads many adjacent frames.
+        self._bev_cache: "OrderedDict[str, torch.Tensor]" = OrderedDict()
+        self._bev_cache_max = 256
 
         # Horizon lookahead (frames). Defaults mirror § 5.1.
         self.h_05s = int(getattr(cfg, "horizon_05s_frames", 10)) if cfg else 10
@@ -313,6 +318,66 @@ class RiskDataset(Dataset):
             self._traj_cache.popitem(last=False)
         return traj
 
+    def _load_bev_cached(self, bev_path: Path) -> torch.Tensor:
+        key = str(bev_path)
+        hit = self._bev_cache.get(key)
+        if hit is not None:
+            self._bev_cache.move_to_end(key)
+            return hit
+        bev = torch.load(bev_path, map_location="cpu")
+        if not torch.is_tensor(bev):
+            raise ValueError(f"invalid cached BEV object at {bev_path}")
+        if bev.ndim != 3:
+            raise ValueError(
+                f"cached BEV must be (C,H,W), got {tuple(bev.shape)} at {bev_path}"
+            )
+        bev = bev.float().contiguous()
+        self._bev_cache[key] = bev
+        if len(self._bev_cache) > self._bev_cache_max:
+            self._bev_cache.popitem(last=False)
+        return bev
+
+    def horizon_label_stats(self) -> Dict[str, Dict[str, int]]:
+        """
+        Return valid/positive/negative counts per horizon over dataset entries.
+        This is used by training to preflight AP/AUC viability on val split.
+        """
+        cache: Dict[str, Tuple[np.ndarray, np.ndarray, np.ndarray, int]] = {}
+        valid = {"risk_05s": 0, "risk_1s": 0, "risk_2s": 0}
+        pos = {"risk_05s": 0, "risk_1s": 0, "risk_2s": 0}
+        for meta in self.entries:
+            p = meta["path"]
+            if p not in cache:
+                with np.load(p, allow_pickle=False) as data:
+                    r05 = np.asarray(data["risk_05s"]).astype(np.float32)
+                    r1 = np.asarray(data["risk_1s"]).astype(np.float32)
+                    r2 = np.asarray(data["risk_2s"]).astype(np.float32)
+                    Teff = min(len(r05), len(r1), len(r2))
+                cache[p] = (r05, r1, r2, int(Teff))
+            r05, r1, r2, Teff = cache[p]
+            t = int(meta["t"])
+            remain = Teff - t
+            if remain >= self.h_05s:
+                valid["risk_05s"] += 1
+                if r05[t] > 0.5:
+                    pos["risk_05s"] += 1
+            if remain >= self.h_1s:
+                valid["risk_1s"] += 1
+                if r1[t] > 0.5:
+                    pos["risk_1s"] += 1
+            if remain >= self.h_2s:
+                valid["risk_2s"] += 1
+                if r2[t] > 0.5:
+                    pos["risk_2s"] += 1
+        out: Dict[str, Dict[str, int]] = {}
+        for k in ("risk_05s", "risk_1s", "risk_2s"):
+            out[k] = {
+                "valid": int(valid[k]),
+                "positive": int(pos[k]),
+                "negative": int(valid[k] - pos[k]),
+            }
+        return out
+
     def __getitem__(self, idx: int) -> RiskSample:
         meta = self.entries[idx]
         traj = self._load_traj_cached(meta["path"])
@@ -339,14 +404,7 @@ class RiskDataset(Dataset):
                         f"BEV cache frame missing: {bev_path} "
                         f"(traj={meta['traj_relpath']} tau={tau})"
                     )
-                bev = torch.load(bev_path, map_location="cpu")
-                if not torch.is_tensor(bev):
-                    raise ValueError(f"invalid cached BEV object at {bev_path}")
-                if bev.ndim != 3:
-                    raise ValueError(
-                        f"cached BEV must be (C,H,W), got {tuple(bev.shape)} at {bev_path}"
-                    )
-                pts_seq.append(bev.float().contiguous())
+                pts_seq.append(self._load_bev_cached(bev_path))
                 continue
 
             depth_m = traj.depth[tau].astype(np.float32)
@@ -355,7 +413,17 @@ class RiskDataset(Dataset):
             # NOTE:
             #   - default path uses convention presets (no per-frame world pose)
             #   - "from_trajectory" reproduces the previous world-frame behavior
-            if self.extrinsics_convention == "from_trajectory":
+            conv = self.extrinsics_convention
+            if conv == "auto":
+                has_cam_extr = (
+                    hasattr(traj, "cam_extr_R")
+                    and hasattr(traj, "cam_extr_t")
+                    and len(traj.cam_extr_R) > tau
+                    and len(traj.cam_extr_t) > tau
+                )
+                conv = "from_trajectory" if has_cam_extr else "opencv_to_kitti"
+
+            if conv == "from_trajectory":
                 extrinsics = CameraToLidarExtrinsics(
                     R=traj.cam_extr_R[tau].astype(np.float32),
                     t=traj.cam_extr_t[tau].astype(np.float32),
@@ -365,7 +433,7 @@ class RiskDataset(Dataset):
                 extrinsics = CameraToLidarExtrinsics(
                     R=None,
                     t=np.zeros(3, dtype=np.float32),
-                    convention=self.extrinsics_convention,
+                    convention=conv,
                 )
             # Unproject -> local KITTI-style frame -> scale_factor ->
             # intensity -> voxel. No torch-grad path here; this is
@@ -480,9 +548,31 @@ def collate_riskbatch(samples: Sequence[RiskSample]) -> RiskBatch:
             f"(got {[len(s.pts_seq) for s in samples]})"
         )
 
-    pts_seq: List[List[torch.Tensor]] = [
+    pts_seq_lists: List[List[torch.Tensor]] = [
         [s.pts_seq[t] for s in samples] for t in range(T_ctx)
     ]
+    # Fast path for cached BEV mode: collapse list-of-list into one contiguous
+    # tensor [T, B, C, H, W] to reduce multiprocessing shared-memory pressure.
+    can_stack_bev = True
+    ref_shape = None
+    for frame in pts_seq_lists:
+        for x in frame:
+            if not torch.is_tensor(x) or x.ndim != 3:
+                can_stack_bev = False
+                break
+            if ref_shape is None:
+                ref_shape = tuple(x.shape)
+            elif tuple(x.shape) != ref_shape:
+                can_stack_bev = False
+                break
+        if not can_stack_bev:
+            break
+    if can_stack_bev:
+        pts_seq = torch.stack(
+            [torch.stack(frame, dim=0) for frame in pts_seq_lists], dim=0
+        ).contiguous()
+    else:
+        pts_seq = pts_seq_lists
     action_seq = torch.stack([s.action_seq for s in samples], dim=0)
     ego_vel_seq = torch.stack([s.ego_vel_seq for s in samples], dim=0)
     risk_05s = torch.stack([s.risk_05s for s in samples], dim=0)

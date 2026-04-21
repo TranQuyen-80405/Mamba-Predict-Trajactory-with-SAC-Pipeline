@@ -131,7 +131,7 @@ print("OK: data + checkpoint paths")
 - [ ] Mở `notebooks/compare_trajactory_predict_module.ipynb`.
 - [ ] Đảm bảo `REPO_ROOT` trong cell chính trùng path trên Colab.
 - [ ] Chạy lần lượt các cell: pip → import + `run_experiment`.
-- [ ] Output mong đợi: log TensorBoard dưới `runs/stage_a_compare/`, file `summary.json` (metrics + đường dẫn checkpoint), và thư mục **`runs/stage_a_compare/weights/`** với file `.pt` mỗi backbone: `{tên}_stage_a_compare_<timestamp>.pt` và `{tên}_stage_a_compare.pt` (latest).
+- [ ] Output mong đợi: log TensorBoard dưới `runs/stage_a_compare/`, file `summary_<YYYYMMDD_HHMMSS>.json` (metrics + đường dẫn checkpoint), và thư mục **`runs/stage_a_compare/checkpoints/`**. Mỗi backbone sẽ có thư mục con dạng `{backbone}_risk_{epochs_run}epochs/` chứa checkpoint `_last.pt`, `_latest.pt`, `_best_val_ap.pt` và bản copy checkpoint nguồn (`*_source.pth`/`*.pt`).
 
 ---
 

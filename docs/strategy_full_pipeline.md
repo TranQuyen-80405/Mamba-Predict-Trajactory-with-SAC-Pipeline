@@ -377,7 +377,7 @@ Output: tok_grid (B, Nt=16, D=256)
 - Output: `h_seq (B, L, D)`; we take `h_T = h_seq[:, -1, :]` of shape `(B, D)`.
 - Parameters: ≈1.5 M.
 - Alternative fallback (if `mamba-ssm` fails to build): `nn.GRU(input_size=D, hidden_size=D, num_layers=2, batch_first=True)`. Slight quality drop but same API.
-- **Ablations (Stage A only):** `models/temporal_encoders.py` adds `LSTMTemporal` (`nn.LSTM`) and `TransformerEncoderTemporal` (`nn.TransformerEncoder` + causal mask). `models/temporal_factory.build_temporal` selects `mamba` / `gru` / `lstm` / `transformer`. `FullPipeline` accepts any submodule with the same bulk `forward` contract `(B, L, D) → (B, L, D)` via its `mamba=` argument. `train_stage_a_compare.py` trains each backbone on the same scene split and logs TensorBoard + `summary.json`. **Streaming `step()`** for Stage B is implemented for Mamba / GRU / LSTM; the Transformer path is training / metrics only (no `step()`).
+- **Ablations (Stage A only):** `models/temporal_encoders.py` adds `LSTMTemporal` (`nn.LSTM`) and `TransformerEncoderTemporal` (`nn.TransformerEncoder` + causal mask). `models/temporal_factory.build_temporal` selects `mamba` / `gru` / `lstm` / `transformer`. `FullPipeline` accepts any submodule with the same bulk `forward` contract `(B, L, D) → (B, L, D)` via its `mamba=` argument. `train_stage_a_compare.py` trains each backbone on the same scene split and logs TensorBoard + `summary_<YYYYMMDD_HHMMSS>.json`. **Streaming `step()`** for Stage B is implemented for Mamba / GRU / LSTM; the Transformer path is training / metrics only (no `step()`).
 
 ### 4.4 `RiskHead`
 
