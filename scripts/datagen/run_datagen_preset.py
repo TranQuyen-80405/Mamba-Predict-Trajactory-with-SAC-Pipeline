@@ -66,21 +66,24 @@ def _cfg_experiment_2gpu() -> DataGenConfig:
     Balanced Stage-A comparison preset for dual mid-range GPUs.
 
     Goals:
-      - more valid positives at 0.5s / 1s / 2s than ``experiment``
-      - still small enough to train 4 backbones in one run
+      - keep the set small enough for 4-backbone compare runs
+      - target risk_1s class balance in the 5-30% QA band
+      - preserve shortcut-buster coverage via StationaryPolicy
     """
     return DataGenConfig(
-        out_dir=os.path.join(_HERE, "data", "stage_a_experiment_2gpu_balanced_v5"),
+        out_dir=os.path.join(_HERE, "data", "stage_a_experiment_2gpu_balanced_v7"),
         n_scenes=32,
         rollouts_per_scene=4,
         frames_per_rollout=220,
-        policy_random_p=0.75,
-        policy_scripted_p=0.20,
-        policy_adversarial_p=0.03,
-        policy_stationary_p=0.02,
+        # 90% mostly-safe behavior
+        policy_random_p=0.55,
+        policy_scripted_p=0.35,
+        # 10% risky/shortcut-buster behavior
+        policy_adversarial_p=0.05,
+        policy_stationary_p=0.05,
         camera_jitter_deg=0.0,
         terminate_on_contact=True,
-        post_contact_grace_frames=20,
+        post_contact_grace_frames=0,
         save_rgb=False,
         seed=23,
     )
