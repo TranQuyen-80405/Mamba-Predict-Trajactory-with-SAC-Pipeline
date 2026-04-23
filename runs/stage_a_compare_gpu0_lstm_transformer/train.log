@@ -1,0 +1,224 @@
+pybullet build time: Apr 20 2026 14:38:59
+[lstm_20260422_121904] epoch 1/30 micro_batch 100/612 loss=0.2476
+[lstm_20260422_121904] epoch 1/30 micro_batch 200/612 loss=0.2625
+[lstm_20260422_121904] epoch 1/30 micro_batch 300/612 loss=0.2402
+[lstm_20260422_121904] epoch 1/30 micro_batch 400/612 loss=0.2965
+[lstm_20260422_121904] epoch 1/30 micro_batch 500/612 loss=0.2241
+[lstm_20260422_121904] epoch 1/30 micro_batch 600/612 loss=0.2330
+[lstm_20260422_121904] epoch 1/30 train_loss=0.2636 val_ap_risk_05s=0.2436 val_ap_risk_1s=0.2041 val_ADE_xy=0.3694 val_latency_ms/sample=13.270
+[lstm_20260422_121904] epoch 2/30 micro_batch 100/612 loss=0.2192
+[lstm_20260422_121904] epoch 2/30 micro_batch 200/612 loss=0.2522
+[lstm_20260422_121904] epoch 2/30 micro_batch 300/612 loss=0.2701
+[lstm_20260422_121904] epoch 2/30 micro_batch 400/612 loss=0.2439
+[lstm_20260422_121904] epoch 2/30 micro_batch 500/612 loss=0.2862
+[lstm_20260422_121904] epoch 2/30 micro_batch 600/612 loss=0.2573
+[lstm_20260422_121904] epoch 2/30 train_loss=0.2553 val_ap_risk_05s=0.3592 val_ap_risk_1s=0.2575 val_ADE_xy=0.4001 val_latency_ms/sample=13.269
+[lstm_20260422_121904] epoch 3/30 micro_batch 100/612 loss=0.3688
+[lstm_20260422_121904] epoch 3/30 micro_batch 200/612 loss=0.2065
+[lstm_20260422_121904] epoch 3/30 micro_batch 300/612 loss=0.2337
+[lstm_20260422_121904] epoch 3/30 micro_batch 400/612 loss=0.2906
+[lstm_20260422_121904] epoch 3/30 micro_batch 500/612 loss=0.2202
+[lstm_20260422_121904] epoch 3/30 micro_batch 600/612 loss=0.2543
+[lstm_20260422_121904] epoch 3/30 train_loss=0.2526 val_ap_risk_05s=0.3553 val_ap_risk_1s=0.2894 val_ADE_xy=0.3859 val_latency_ms/sample=13.278
+[lstm_20260422_121904] epoch 4/30 micro_batch 100/612 loss=0.2348
+[lstm_20260422_121904] epoch 4/30 micro_batch 200/612 loss=0.2763
+[lstm_20260422_121904] epoch 4/30 micro_batch 300/612 loss=0.2321
+[lstm_20260422_121904] epoch 4/30 micro_batch 400/612 loss=0.1978
+[lstm_20260422_121904] epoch 4/30 micro_batch 500/612 loss=0.1862
+[lstm_20260422_121904] epoch 4/30 micro_batch 600/612 loss=0.2167
+[lstm_20260422_121904] epoch 4/30 train_loss=0.2562 val_ap_risk_05s=0.3839 val_ap_risk_1s=0.2857 val_ADE_xy=0.3747 val_latency_ms/sample=13.267
+[lstm_20260422_121904] epoch 5/30 micro_batch 100/612 loss=0.2956
+[lstm_20260422_121904] epoch 5/30 micro_batch 200/612 loss=0.3108
+[lstm_20260422_121904] epoch 5/30 micro_batch 300/612 loss=0.1836
+[lstm_20260422_121904] epoch 5/30 micro_batch 400/612 loss=0.2060
+[lstm_20260422_121904] epoch 5/30 micro_batch 500/612 loss=0.3254
+[lstm_20260422_121904] epoch 5/30 micro_batch 600/612 loss=0.2262
+[lstm_20260422_121904] epoch 5/30 train_loss=0.2540 val_ap_risk_05s=0.4043 val_ap_risk_1s=0.2876 val_ADE_xy=0.3723 val_latency_ms/sample=13.266
+[lstm_20260422_121904] epoch 6/30 micro_batch 100/612 loss=0.2045
+[lstm_20260422_121904] epoch 6/30 micro_batch 200/612 loss=0.2145
+[lstm_20260422_121904] epoch 6/30 micro_batch 300/612 loss=0.3101
+[lstm_20260422_121904] epoch 6/30 micro_batch 400/612 loss=0.1573
+[lstm_20260422_121904] epoch 6/30 micro_batch 500/612 loss=0.4053
+[lstm_20260422_121904] epoch 6/30 micro_batch 600/612 loss=0.2116
+[lstm_20260422_121904] epoch 6/30 train_loss=0.2436 val_ap_risk_05s=0.3746 val_ap_risk_1s=0.3358 val_ADE_xy=0.4262 val_latency_ms/sample=13.269
+[lstm_20260422_121904] epoch 7/30 micro_batch 100/612 loss=0.2573
+[lstm_20260422_121904] epoch 7/30 micro_batch 200/612 loss=0.2956
+[lstm_20260422_121904] epoch 7/30 micro_batch 300/612 loss=0.3074
+[lstm_20260422_121904] epoch 7/30 micro_batch 400/612 loss=0.3158
+[lstm_20260422_121904] epoch 7/30 micro_batch 500/612 loss=0.2310
+[lstm_20260422_121904] epoch 7/30 micro_batch 600/612 loss=0.2160
+[lstm_20260422_121904] epoch 7/30 train_loss=0.2412 val_ap_risk_05s=0.4451 val_ap_risk_1s=0.4305 val_ADE_xy=0.3969 val_latency_ms/sample=13.276
+[lstm_20260422_121904] epoch 8/30 micro_batch 100/612 loss=0.2409
+[lstm_20260422_121904] epoch 8/30 micro_batch 200/612 loss=0.2357
+[lstm_20260422_121904] epoch 8/30 micro_batch 300/612 loss=0.3022
+[lstm_20260422_121904] epoch 8/30 micro_batch 400/612 loss=0.1553
+[lstm_20260422_121904] epoch 8/30 micro_batch 500/612 loss=0.1969
+[lstm_20260422_121904] epoch 8/30 micro_batch 600/612 loss=0.2671
+[lstm_20260422_121904] epoch 8/30 train_loss=0.2370 val_ap_risk_05s=0.4955 val_ap_risk_1s=0.3600 val_ADE_xy=0.3817 val_latency_ms/sample=13.283
+[lstm_20260422_121904] epoch 9/30 micro_batch 100/612 loss=0.2128
+[lstm_20260422_121904] epoch 9/30 micro_batch 200/612 loss=0.3381
+[lstm_20260422_121904] epoch 9/30 micro_batch 300/612 loss=0.3697
+[lstm_20260422_121904] epoch 9/30 micro_batch 400/612 loss=0.1880
+[lstm_20260422_121904] epoch 9/30 micro_batch 500/612 loss=0.2762
+[lstm_20260422_121904] epoch 9/30 micro_batch 600/612 loss=0.2013
+[lstm_20260422_121904] epoch 9/30 train_loss=0.2401 val_ap_risk_05s=0.5158 val_ap_risk_1s=0.3788 val_ADE_xy=0.4296 val_latency_ms/sample=13.279
+[lstm_20260422_121904] epoch 10/30 micro_batch 100/612 loss=0.2725
+[lstm_20260422_121904] epoch 10/30 micro_batch 200/612 loss=0.2786
+[lstm_20260422_121904] epoch 10/30 micro_batch 300/612 loss=0.1801
+[lstm_20260422_121904] epoch 10/30 micro_batch 400/612 loss=0.2311
+[lstm_20260422_121904] epoch 10/30 micro_batch 500/612 loss=0.2879
+[lstm_20260422_121904] epoch 10/30 micro_batch 600/612 loss=0.3201
+[lstm_20260422_121904] epoch 10/30 train_loss=0.2320 val_ap_risk_05s=0.4937 val_ap_risk_1s=0.4173 val_ADE_xy=0.3845 val_latency_ms/sample=13.275
+[lstm_20260422_121904] epoch 11/30 micro_batch 100/612 loss=0.2357
+[lstm_20260422_121904] epoch 11/30 micro_batch 200/612 loss=0.3050
+[lstm_20260422_121904] epoch 11/30 micro_batch 300/612 loss=0.2762
+[lstm_20260422_121904] epoch 11/30 micro_batch 400/612 loss=0.2617
+[lstm_20260422_121904] epoch 11/30 micro_batch 500/612 loss=0.1994
+[lstm_20260422_121904] epoch 11/30 micro_batch 600/612 loss=0.2492
+[lstm_20260422_121904] epoch 11/30 train_loss=0.2290 val_ap_risk_05s=0.4379 val_ap_risk_1s=0.4849 val_ADE_xy=0.4190 val_latency_ms/sample=13.274
+[lstm_20260422_121904] epoch 12/30 micro_batch 100/612 loss=0.1741
+[lstm_20260422_121904] epoch 12/30 micro_batch 200/612 loss=0.2128
+[lstm_20260422_121904] epoch 12/30 micro_batch 300/612 loss=0.2056
+[lstm_20260422_121904] epoch 12/30 micro_batch 400/612 loss=0.1833
+[lstm_20260422_121904] epoch 12/30 micro_batch 500/612 loss=0.2423
+[lstm_20260422_121904] epoch 12/30 micro_batch 600/612 loss=0.2378
+[lstm_20260422_121904] epoch 12/30 train_loss=0.2307 val_ap_risk_05s=0.3342 val_ap_risk_1s=0.4284 val_ADE_xy=0.3956 val_latency_ms/sample=13.276
+[lstm_20260422_121904] epoch 13/30 micro_batch 100/612 loss=0.2398
+[lstm_20260422_121904] epoch 13/30 micro_batch 200/612 loss=0.3226
+[lstm_20260422_121904] epoch 13/30 micro_batch 300/612 loss=0.2125
+[lstm_20260422_121904] epoch 13/30 micro_batch 400/612 loss=0.1902
+[lstm_20260422_121904] epoch 13/30 micro_batch 500/612 loss=0.1767
+[lstm_20260422_121904] epoch 13/30 micro_batch 600/612 loss=0.2032
+[lstm_20260422_121904] epoch 13/30 train_loss=0.2217 val_ap_risk_05s=0.3993 val_ap_risk_1s=0.3918 val_ADE_xy=0.4576 val_latency_ms/sample=13.266
+[lstm_20260422_121904] epoch 14/30 micro_batch 100/612 loss=0.1659
+[lstm_20260422_121904] epoch 14/30 micro_batch 200/612 loss=0.2064
+[lstm_20260422_121904] epoch 14/30 micro_batch 300/612 loss=0.2911
+[lstm_20260422_121904] epoch 14/30 micro_batch 400/612 loss=0.4307
+[lstm_20260422_121904] epoch 14/30 micro_batch 500/612 loss=0.2205
+[lstm_20260422_121904] epoch 14/30 micro_batch 600/612 loss=0.1696
+[lstm_20260422_121904] epoch 14/30 train_loss=0.2173 val_ap_risk_05s=0.3571 val_ap_risk_1s=0.3795 val_ADE_xy=0.4226 val_latency_ms/sample=13.267
+[lstm_20260422_121904] epoch 15/30 micro_batch 100/612 loss=0.2085
+[lstm_20260422_121904] epoch 15/30 micro_batch 200/612 loss=0.2958
+[lstm_20260422_121904] epoch 15/30 micro_batch 300/612 loss=0.3100
+[lstm_20260422_121904] epoch 15/30 micro_batch 400/612 loss=0.2425
+[lstm_20260422_121904] epoch 15/30 micro_batch 500/612 loss=0.2226
+[lstm_20260422_121904] epoch 15/30 micro_batch 600/612 loss=0.2244
+[lstm_20260422_121904] epoch 15/30 train_loss=0.2179 val_ap_risk_05s=0.3639 val_ap_risk_1s=0.4625 val_ADE_xy=0.4032 val_latency_ms/sample=13.272
+[lstm_20260422_121904] epoch 16/30 micro_batch 100/612 loss=0.2193
+[lstm_20260422_121904] epoch 16/30 micro_batch 200/612 loss=0.2221
+[lstm_20260422_121904] epoch 16/30 micro_batch 300/612 loss=0.1861
+[lstm_20260422_121904] epoch 16/30 micro_batch 400/612 loss=0.2882
+[lstm_20260422_121904] epoch 16/30 micro_batch 500/612 loss=0.1992
+[lstm_20260422_121904] epoch 16/30 micro_batch 600/612 loss=0.2786
+[lstm_20260422_121904] epoch 16/30 train_loss=0.2119 val_ap_risk_05s=0.3562 val_ap_risk_1s=0.4345 val_ADE_xy=0.3882 val_latency_ms/sample=13.263
+[lstm_20260422_121904] epoch 17/30 micro_batch 100/612 loss=0.2216
+[lstm_20260422_121904] epoch 17/30 micro_batch 200/612 loss=0.2379
+[lstm_20260422_121904] epoch 17/30 micro_batch 300/612 loss=0.1326
+[lstm_20260422_121904] epoch 17/30 micro_batch 400/612 loss=0.1474
+[lstm_20260422_121904] epoch 17/30 micro_batch 500/612 loss=0.1397
+[lstm_20260422_121904] epoch 17/30 micro_batch 600/612 loss=0.2082
+[lstm_20260422_121904] epoch 17/30 train_loss=0.2101 val_ap_risk_05s=0.3874 val_ap_risk_1s=0.4854 val_ADE_xy=0.3988 val_latency_ms/sample=13.284
+[lstm_20260422_121904] epoch 18/30 micro_batch 100/612 loss=0.1607
+[lstm_20260422_121904] epoch 18/30 micro_batch 200/612 loss=0.1665
+[lstm_20260422_121904] epoch 18/30 micro_batch 300/612 loss=0.1960
+[lstm_20260422_121904] epoch 18/30 micro_batch 400/612 loss=0.2485
+[lstm_20260422_121904] epoch 18/30 micro_batch 500/612 loss=0.3221
+[lstm_20260422_121904] epoch 18/30 micro_batch 600/612 loss=0.2197
+[lstm_20260422_121904] epoch 18/30 train_loss=0.2050 val_ap_risk_05s=0.4187 val_ap_risk_1s=0.4487 val_ADE_xy=0.3921 val_latency_ms/sample=13.266
+[lstm_20260422_121904] epoch 19/30 micro_batch 100/612 loss=0.1928
+[lstm_20260422_121904] epoch 19/30 micro_batch 200/612 loss=0.2311
+[lstm_20260422_121904] epoch 19/30 micro_batch 300/612 loss=0.1430
+[lstm_20260422_121904] epoch 19/30 micro_batch 400/612 loss=0.2425
+[lstm_20260422_121904] epoch 19/30 micro_batch 500/612 loss=0.2087
+[lstm_20260422_121904] epoch 19/30 micro_batch 600/612 loss=0.1647
+[lstm_20260422_121904] epoch 19/30 train_loss=0.2073 val_ap_risk_05s=0.3904 val_ap_risk_1s=0.4777 val_ADE_xy=0.4145 val_latency_ms/sample=13.274
+[lstm_20260422_121904] epoch 20/30 micro_batch 100/612 loss=0.1862
+[lstm_20260422_121904] epoch 20/30 micro_batch 200/612 loss=0.2013
+[lstm_20260422_121904] epoch 20/30 micro_batch 300/612 loss=0.2005
+[lstm_20260422_121904] epoch 20/30 micro_batch 400/612 loss=0.3402
+[lstm_20260422_121904] epoch 20/30 micro_batch 500/612 loss=0.1257
+[lstm_20260422_121904] epoch 20/30 micro_batch 600/612 loss=0.2204
+[lstm_20260422_121904] epoch 20/30 train_loss=0.2019 val_ap_risk_05s=0.4296 val_ap_risk_1s=0.4570 val_ADE_xy=0.3910 val_latency_ms/sample=13.284
+[lstm_20260422_121904] epoch 21/30 micro_batch 100/612 loss=0.2180
+[lstm_20260422_121904] epoch 21/30 micro_batch 200/612 loss=0.2463
+[lstm_20260422_121904] epoch 21/30 micro_batch 300/612 loss=0.2054
+[lstm_20260422_121904] epoch 21/30 micro_batch 400/612 loss=0.1764
+[lstm_20260422_121904] epoch 21/30 micro_batch 500/612 loss=0.2247
+[lstm_20260422_121904] epoch 21/30 micro_batch 600/612 loss=0.2596
+[lstm_20260422_121904] epoch 21/30 train_loss=0.1968 val_ap_risk_05s=0.4051 val_ap_risk_1s=0.4433 val_ADE_xy=0.4136 val_latency_ms/sample=13.274
+[lstm_20260422_121904] epoch 22/30 micro_batch 100/612 loss=0.1606
+[lstm_20260422_121904] epoch 22/30 micro_batch 200/612 loss=0.2019
+[lstm_20260422_121904] epoch 22/30 micro_batch 300/612 loss=0.1369
+[lstm_20260422_121904] epoch 22/30 micro_batch 400/612 loss=0.1638
+[lstm_20260422_121904] epoch 22/30 micro_batch 500/612 loss=0.1837
+[lstm_20260422_121904] epoch 22/30 micro_batch 600/612 loss=0.3068
+[lstm_20260422_121904] epoch 22/30 train_loss=0.1979 val_ap_risk_05s=0.4856 val_ap_risk_1s=0.5065 val_ADE_xy=0.3948 val_latency_ms/sample=13.284
+[lstm_20260422_121904] epoch 23/30 micro_batch 100/612 loss=0.1795
+[lstm_20260422_121904] epoch 23/30 micro_batch 200/612 loss=0.2245
+[lstm_20260422_121904] epoch 23/30 micro_batch 300/612 loss=0.1789
+[lstm_20260422_121904] epoch 23/30 micro_batch 400/612 loss=0.1729
+[lstm_20260422_121904] epoch 23/30 micro_batch 500/612 loss=0.2596
+[lstm_20260422_121904] epoch 23/30 micro_batch 600/612 loss=0.1633
+[lstm_20260422_121904] epoch 23/30 train_loss=0.1966 val_ap_risk_05s=0.4467 val_ap_risk_1s=0.4669 val_ADE_xy=0.4072 val_latency_ms/sample=13.281
+[lstm_20260422_121904] epoch 24/30 micro_batch 100/612 loss=0.1586
+[lstm_20260422_121904] epoch 24/30 micro_batch 200/612 loss=0.1863
+[lstm_20260422_121904] epoch 24/30 micro_batch 300/612 loss=0.1455
+[lstm_20260422_121904] epoch 24/30 micro_batch 400/612 loss=0.1936
+[lstm_20260422_121904] epoch 24/30 micro_batch 500/612 loss=0.2027
+[lstm_20260422_121904] epoch 24/30 micro_batch 600/612 loss=0.2996
+[lstm_20260422_121904] epoch 24/30 train_loss=0.1936 val_ap_risk_05s=0.4158 val_ap_risk_1s=0.4487 val_ADE_xy=0.4124 val_latency_ms/sample=13.265
+[lstm_20260422_121904] epoch 25/30 micro_batch 100/612 loss=0.1449
+[lstm_20260422_121904] epoch 25/30 micro_batch 200/612 loss=0.1823
+[lstm_20260422_121904] epoch 25/30 micro_batch 300/612 loss=0.2287
+[lstm_20260422_121904] epoch 25/30 micro_batch 400/612 loss=0.1901
+[lstm_20260422_121904] epoch 25/30 micro_batch 500/612 loss=0.1525
+[lstm_20260422_121904] epoch 25/30 micro_batch 600/612 loss=0.2391
+[lstm_20260422_121904] epoch 25/30 train_loss=0.1881 val_ap_risk_05s=0.4205 val_ap_risk_1s=0.4670 val_ADE_xy=0.4271 val_latency_ms/sample=13.279
+[lstm_20260422_121904] epoch 26/30 micro_batch 100/612 loss=0.1904
+[lstm_20260422_121904] epoch 26/30 micro_batch 200/612 loss=0.1583
+[lstm_20260422_121904] epoch 26/30 micro_batch 300/612 loss=0.1301
+[lstm_20260422_121904] epoch 26/30 micro_batch 400/612 loss=0.1480
+[lstm_20260422_121904] epoch 26/30 micro_batch 500/612 loss=0.1550
+[lstm_20260422_121904] epoch 26/30 micro_batch 600/612 loss=0.2950
+[lstm_20260422_121904] epoch 26/30 train_loss=0.1897 val_ap_risk_05s=0.4858 val_ap_risk_1s=0.4890 val_ADE_xy=0.4050 val_latency_ms/sample=13.283
+[lstm_20260422_121904] epoch 27/30 micro_batch 100/612 loss=0.1509
+[lstm_20260422_121904] epoch 27/30 micro_batch 200/612 loss=0.1600
+[lstm_20260422_121904] epoch 27/30 micro_batch 300/612 loss=0.1876
+[lstm_20260422_121904] epoch 27/30 micro_batch 400/612 loss=0.2182
+[lstm_20260422_121904] epoch 27/30 micro_batch 500/612 loss=0.1691
+[lstm_20260422_121904] epoch 27/30 micro_batch 600/612 loss=0.2029
+[lstm_20260422_121904] epoch 27/30 train_loss=0.1862 val_ap_risk_05s=0.4588 val_ap_risk_1s=0.4620 val_ADE_xy=0.4039 val_latency_ms/sample=13.289
+[lstm_20260422_121904] epoch 28/30 micro_batch 100/612 loss=0.2782
+[lstm_20260422_121904] epoch 28/30 micro_batch 200/612 loss=0.1565
+[lstm_20260422_121904] epoch 28/30 micro_batch 300/612 loss=0.1022
+[lstm_20260422_121904] epoch 28/30 micro_batch 400/612 loss=0.1612
+[lstm_20260422_121904] epoch 28/30 micro_batch 500/612 loss=0.1341
+[lstm_20260422_121904] epoch 28/30 micro_batch 600/612 loss=0.3103
+[lstm_20260422_121904] epoch 28/30 train_loss=0.1859 val_ap_risk_05s=0.4560 val_ap_risk_1s=0.4577 val_ADE_xy=0.4053 val_latency_ms/sample=13.275
+[lstm_20260422_121904] epoch 29/30 micro_batch 100/612 loss=0.1270
+[lstm_20260422_121904] epoch 29/30 micro_batch 200/612 loss=0.2200
+[lstm_20260422_121904] epoch 29/30 micro_batch 300/612 loss=0.1303
+[lstm_20260422_121904] epoch 29/30 micro_batch 400/612 loss=0.1222
+[lstm_20260422_121904] epoch 29/30 micro_batch 500/612 loss=0.2556
+[lstm_20260422_121904] epoch 29/30 micro_batch 600/612 loss=0.2005
+[lstm_20260422_121904] epoch 29/30 train_loss=0.1867 val_ap_risk_05s=0.4549 val_ap_risk_1s=0.4329 val_ADE_xy=0.3941 val_latency_ms/sample=13.281
+[lstm_20260422_121904] epoch 30/30 micro_batch 100/612 loss=0.2067
+[lstm_20260422_121904] epoch 30/30 micro_batch 200/612 loss=0.2100
+[lstm_20260422_121904] epoch 30/30 micro_batch 300/612 loss=0.3488
+[lstm_20260422_121904] epoch 30/30 micro_batch 400/612 loss=0.2270
+[lstm_20260422_121904] epoch 30/30 micro_batch 500/612 loss=0.1942
+[lstm_20260422_121904] epoch 30/30 micro_batch 600/612 loss=0.2102
+[lstm_20260422_121904] epoch 30/30 train_loss=0.1877 val_ap_risk_05s=0.4744 val_ap_risk_1s=0.5146 val_ADE_xy=0.4200 val_latency_ms/sample=13.269
+[transformer_20260423_070121] epoch 1/30 micro_batch 100/612 loss=0.2409
+[transformer_20260423_070121] epoch 1/30 micro_batch 200/612 loss=0.2480
+[transformer_20260423_070121] epoch 1/30 micro_batch 300/612 loss=0.3353
+[transformer_20260423_070121] epoch 1/30 micro_batch 400/612 loss=0.2165
+[transformer_20260423_070121] epoch 1/30 micro_batch 500/612 loss=0.2928
+[transformer_20260423_070121] epoch 1/30 micro_batch 600/612 loss=0.2599
+[transformer_20260423_070121] epoch 1/30 train_loss=0.2570 val_ap_risk_05s=0.4001 val_ap_risk_1s=0.2107 val_ADE_xy=0.3749 val_latency_ms/sample=12.217
+[transformer_20260423_070121] epoch 2/30 micro_batch 100/612 loss=0.3291
+[transformer_20260423_070121] epoch 2/30 micro_batch 200/612 loss=0.3165
+[transformer_20260423_070121] epoch 2/30 micro_batch 300/612 loss=0.2478
+[transformer_20260423_070121] epoch 2/30 micro_batch 400/612 loss=0.2539
+[transformer_20260423_070121] epoch 2/30 micro_batch 500/612 loss=0.2484
+[transformer_20260423_070121] epoch 2/30 micro_batch 600/612 loss=0.2365

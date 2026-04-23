@@ -1,0 +1,8 @@
+pybullet build time: Apr 20 2026 14:38:59
+[MambaTemporal] backend=mamba d_model=256 n_blocks=2 dropout=0.1
+[mamba_a2_20260422_115100] epoch 1/20 micro_batch 100/612 loss=0.2805
+[mamba_a2_20260422_115100] epoch 1/20 micro_batch 200/612 loss=0.2598
+[mamba_a2_20260422_115100] epoch 1/20 micro_batch 300/612 loss=0.2245
+[mamba_a2_20260422_115100] epoch 1/20 micro_batch 400/612 loss=0.2717
+[mamba_a2_20260422_115100] epoch 1/20 micro_batch 500/612 loss=0.2526
+[mamba_a2_20260422_115100] epoch 1/20 micro_batch 600/612 loss=0.2296
