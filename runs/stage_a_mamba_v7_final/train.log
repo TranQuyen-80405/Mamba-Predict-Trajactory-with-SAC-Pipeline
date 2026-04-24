@@ -1,0 +1,78 @@
+[MambaTemporal] backend=mamba d_model=256 n_blocks=2 dropout=0.1
+[mamba_20260422_141313] temporal backbone ONLY trainable parameters (fair compare): 876544
+[mamba_runtime] MambaTemporal backend='auto' train_device=cuda torch.cuda.is_available()=True
+[mamba_20260422_141313] total AdamW trainable parameters: 3037859
+[mamba_20260422_141313] epoch 1/12 micro_batch 100/636 loss=0.6932
+[mamba_20260422_141313] epoch 1/12 micro_batch 200/636 loss=0.5531
+[mamba_20260422_141313] epoch 1/12 micro_batch 300/636 loss=0.2659
+[mamba_20260422_141313] epoch 1/12 micro_batch 400/636 loss=0.2125
+[mamba_20260422_141313] epoch 1/12 micro_batch 500/636 loss=0.4117
+[mamba_20260422_141313] epoch 1/12 micro_batch 600/636 loss=0.5061
+[mamba_20260422_141313] epoch 1/12 train_loss=0.4631 val_ap_risk_05s=nan val_ap_risk_1s=0.0354 val_ADE_xy=0.3159 val_latency_ms/sample=142.076
+[mamba_20260422_141313] epoch 2/12 micro_batch 100/636 loss=0.2541
+[mamba_20260422_141313] epoch 2/12 micro_batch 200/636 loss=0.7158
+[mamba_20260422_141313] epoch 2/12 micro_batch 300/636 loss=0.3884
+[mamba_20260422_141313] epoch 2/12 micro_batch 400/636 loss=0.5052
+[mamba_20260422_141313] epoch 2/12 micro_batch 500/636 loss=0.3393
+[mamba_20260422_141313] epoch 2/12 micro_batch 600/636 loss=0.5248
+[mamba_20260422_141313] epoch 2/12 train_loss=0.4074 val_ap_risk_05s=nan val_ap_risk_1s=0.0227 val_ADE_xy=0.3340 val_latency_ms/sample=126.983
+[mamba_20260422_141313] epoch 3/12 micro_batch 100/636 loss=0.4850
+[mamba_20260422_141313] epoch 3/12 micro_batch 200/636 loss=0.1387
+[mamba_20260422_141313] epoch 3/12 micro_batch 300/636 loss=0.4308
+[mamba_20260422_141313] epoch 3/12 micro_batch 400/636 loss=0.5819
+[mamba_20260422_141313] epoch 3/12 micro_batch 500/636 loss=0.6920
+[mamba_20260422_141313] epoch 3/12 micro_batch 600/636 loss=0.4776
+[mamba_20260422_141313] epoch 3/12 train_loss=0.3435 val_ap_risk_05s=nan val_ap_risk_1s=0.0187 val_ADE_xy=0.3398 val_latency_ms/sample=140.346
+[mamba_20260422_141313] epoch 4/12 micro_batch 100/636 loss=0.3243
+[mamba_20260422_141313] epoch 4/12 micro_batch 200/636 loss=0.2674
+[mamba_20260422_141313] epoch 4/12 micro_batch 300/636 loss=0.3706
+[mamba_20260422_141313] epoch 4/12 micro_batch 400/636 loss=0.2305
+[mamba_20260422_141313] epoch 4/12 micro_batch 500/636 loss=0.2464
+[mamba_20260422_141313] epoch 4/12 micro_batch 600/636 loss=0.1135
+[mamba_20260422_141313] epoch 4/12 train_loss=0.3237 val_ap_risk_05s=nan val_ap_risk_1s=0.0173 val_ADE_xy=0.3462 val_latency_ms/sample=107.982
+[mamba_20260422_141313] epoch 5/12 micro_batch 100/636 loss=0.3282
+[mamba_20260422_141313] epoch 5/12 micro_batch 200/636 loss=0.0249
+[mamba_20260422_141313] epoch 5/12 micro_batch 300/636 loss=0.2364
+[mamba_20260422_141313] epoch 5/12 micro_batch 400/636 loss=0.3336
+[mamba_20260422_141313] epoch 5/12 micro_batch 500/636 loss=0.2183
+[mamba_20260422_141313] epoch 5/12 micro_batch 600/636 loss=0.1625
+[mamba_20260422_141313] epoch 5/12 train_loss=0.2953 val_ap_risk_05s=nan val_ap_risk_1s=0.0171 val_ADE_xy=0.3567 val_latency_ms/sample=103.176
+[mamba_20260422_141313] epoch 6/12 micro_batch 100/636 loss=0.1926
+[mamba_20260422_141313] epoch 6/12 micro_batch 200/636 loss=0.4480
+[mamba_20260422_141313] epoch 6/12 micro_batch 300/636 loss=0.3105
+[mamba_20260422_141313] epoch 6/12 micro_batch 400/636 loss=0.3707
+[mamba_20260422_141313] epoch 6/12 micro_batch 500/636 loss=0.1453
+[mamba_20260422_141313] epoch 6/12 micro_batch 600/636 loss=0.2812
+[mamba_20260422_141313] epoch 6/12 train_loss=0.2792 val_ap_risk_05s=nan val_ap_risk_1s=0.0246 val_ADE_xy=0.3472 val_latency_ms/sample=128.964
+[mamba_20260422_141313] epoch 7/12 micro_batch 100/636 loss=0.3295
+[mamba_20260422_141313] epoch 7/12 micro_batch 200/636 loss=0.4594
+[mamba_20260422_141313] epoch 7/12 micro_batch 300/636 loss=0.2896
+[mamba_20260422_141313] epoch 7/12 micro_batch 400/636 loss=0.3221
+[mamba_20260422_141313] epoch 7/12 micro_batch 500/636 loss=0.0051
+[mamba_20260422_141313] epoch 7/12 micro_batch 600/636 loss=0.2898
+[mamba_20260422_141313] epoch 7/12 train_loss=0.2835 val_ap_risk_05s=nan val_ap_risk_1s=0.0259 val_ADE_xy=0.3466 val_latency_ms/sample=140.156
+[mamba_20260422_141313] epoch 8/12 micro_batch 100/636 loss=0.2330
+[mamba_20260422_141313] epoch 8/12 micro_batch 200/636 loss=0.2689
+[mamba_20260422_141313] epoch 8/12 micro_batch 300/636 loss=0.1560
+[mamba_20260422_141313] epoch 8/12 micro_batch 400/636 loss=0.4821
+[mamba_20260422_141313] epoch 8/12 micro_batch 500/636 loss=0.0386
+[mamba_20260422_141313] epoch 8/12 micro_batch 600/636 loss=0.4086
+[mamba_20260422_141313] epoch 8/12 train_loss=0.2545 val_ap_risk_05s=nan val_ap_risk_1s=0.0242 val_ADE_xy=0.3379 val_latency_ms/sample=134.066
+[mamba_20260422_141313] epoch 9/12 micro_batch 100/636 loss=0.3260
+[mamba_20260422_141313] epoch 9/12 micro_batch 200/636 loss=0.1346
+[mamba_20260422_141313] epoch 9/12 micro_batch 300/636 loss=0.1585
+[mamba_20260422_141313] epoch 9/12 micro_batch 400/636 loss=0.3515
+[mamba_20260422_141313] epoch 9/12 micro_batch 500/636 loss=0.2999
+[mamba_20260422_141313] epoch 9/12 micro_batch 600/636 loss=0.3065
+[mamba_20260422_141313] epoch 9/12 train_loss=0.2445 val_ap_risk_05s=nan val_ap_risk_1s=0.0206 val_ADE_xy=0.3758 val_latency_ms/sample=138.025
+
+=== Risk (validation, best-val snapshot) ===
+model            AP@0.5s     AP@1s     AP@2s    AUC@1s     lat_ms
+mamba                nan    0.0354    0.0117    0.3469    142.076
+
+=== Trajectory forecast (validation, best-val snapshot) ===
+model            RMSE_all   ADE_xy_m   FDE_xy_m   RMSE_yaw
+mamba              0.7352     0.3159     0.4010     1.2122
+
+TensorBoard: tensorboard --logdir runs/stage_a_mamba_v7_final
+Wrote runs/stage_a_mamba_v7_final/summary_20260422_214622.json

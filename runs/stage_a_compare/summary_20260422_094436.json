@@ -1,0 +1,17 @@
+{
+  "mamba": {
+    "backbone": "mamba",
+    "run_name": "mamba_placeholder",
+    "log_dir": "runs/stage_a_compare/mamba_placeholder",
+    "weights_dir": "runs/stage_a_compare/checkpoints",
+    "ap_risk_05s": NaN,
+    "ap_risk_1s": NaN,
+    "ap_risk_2s": NaN,
+    "auc_risk_1s": NaN,
+    "traj_rmse_all": NaN,
+    "traj_ade_xy_m": NaN,
+    "traj_fde_xy_m": NaN,
+    "traj_rmse_yaw_rad": NaN,
+    "val_inference_ms_per_sample": NaN
+  }
+}

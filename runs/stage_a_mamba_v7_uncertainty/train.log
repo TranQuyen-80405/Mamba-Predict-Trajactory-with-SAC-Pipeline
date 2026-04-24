@@ -1,0 +1,8 @@
+[MambaTemporal] backend=mamba d_model=256 n_blocks=2 dropout=0.1
+[train][mamba] epoch=1/12 batch=10/636 data_wait_ms=847.9 step_ms=669.5 loss=0.6317
+[train][mamba] epoch=1/12 batch=20/636 data_wait_ms=2074.8 step_ms=696.8 loss=0.6322
+[train][mamba] epoch=1/12 batch=30/636 data_wait_ms=2462.8 step_ms=721.0 loss=0.3951
+[train][mamba] epoch=1/12 batch=40/636 data_wait_ms=2783.6 step_ms=497.6 loss=0.2857
+[train][mamba] epoch=1/12 batch=50/636 data_wait_ms=2748.9 step_ms=703.8 loss=0.4834
+[train][mamba] epoch=1/12 batch=60/636 data_wait_ms=3095.9 step_ms=532.2 loss=0.3150
+[train][mamba] epoch=1/12 batch=70/636 data_wait_ms=3265.1 step_ms=683.5 loss=0.3727

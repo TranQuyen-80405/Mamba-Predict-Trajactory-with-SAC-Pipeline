@@ -1,0 +1,20 @@
+{
+  "mamba": {
+    "backbone": "mamba",
+    "run_name": "mamba_20260422_141313",
+    "log_dir": "runs/stage_a_mamba_v7_final/mamba_20260422_141313",
+    "weights_dir": "runs/stage_a_mamba_v7_final/checkpoints",
+    "best_epoch": 1.0,
+    "ap_risk_05s": NaN,
+    "ap_risk_1s": 0.03544569138213767,
+    "ap_risk_2s": 0.011729108148652705,
+    "auc_risk_1s": 0.3468818489738992,
+    "traj_rmse_all": 0.7351831197738647,
+    "traj_ade_xy_m": 0.315871000289917,
+    "traj_fde_xy_m": 0.4010021388530731,
+    "traj_rmse_yaw_rad": 1.212169885635376,
+    "val_inference_ms_per_sample": 142.0756978085471,
+    "log_var_risk": -0.022446587681770325,
+    "log_var_traj": -0.022044874727725983
+  }
+}

@@ -1,0 +1,5 @@
+[MambaTemporal] backend=mamba d_model=256 n_blocks=2 dropout=0.1
+[train][mamba] epoch=1/1 batch=5/2031 data_wait_ms=552.0 step_ms=36.5 loss=0.4592
+[train][mamba] epoch=1/1 batch=10/2031 data_wait_ms=763.2 step_ms=40.5 loss=0.4229
+[train][mamba] epoch=1/1 batch=15/2031 data_wait_ms=1072.0 step_ms=43.7 loss=0.2865
+[train][mamba] epoch=1/1 batch=20/2031 data_wait_ms=1243.5 step_ms=40.8 loss=0.5485

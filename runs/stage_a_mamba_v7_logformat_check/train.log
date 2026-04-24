@@ -1,0 +1,8 @@
+[MambaTemporal] backend=mamba d_model=256 n_blocks=2 dropout=0.1
+[mamba_20260422_140234] temporal backbone ONLY trainable parameters (fair compare): 876544
+[mamba_runtime] MambaTemporal backend='auto' train_device=cuda torch.cuda.is_available()=True
+[mamba_20260422_140234] total AdamW trainable parameters: 3037859
+[mamba_20260422_140234] epoch 1/1 micro_batch 5/2031 loss=0.4592
+[mamba_20260422_140234] epoch 1/1 micro_batch 10/2031 loss=0.4229
+[mamba_20260422_140234] epoch 1/1 micro_batch 15/2031 loss=0.2865
+[mamba_20260422_140234] epoch 1/1 micro_batch 20/2031 loss=0.5485

@@ -1,0 +1,121 @@
+[DataLoader] torch_sharing_strategy='file_system' num_workers=0. Workers>0 use start method 'spawn' (avoids fork+CUDA crashes on Linux). Still stuck? set --num_workers 0 (most stable) or lower --batch_size.
+[train] CUDA AMP (autocast + GradScaler) ON — lowers VRAM; OOM: lower --batch_size or pass --no_amp.
+[MambaTemporal] backend=mamba d_model=256 n_blocks=2 dropout=0.1
+[mamba_20260423_031305] temporal backbone ONLY trainable parameters (fair compare): 876544
+[mamba_runtime] MambaTemporal backend='auto' train_device=cuda torch.cuda.is_available()=True
+[mamba_20260423_031305] total AdamW trainable parameters: 3037859
+[mamba_20260423_031305] epoch 1/20 micro_batch 50/943 loss=0.4184
+[mamba_20260423_031305] epoch 1/20 micro_batch 100/943 loss=0.4146
+[mamba_20260423_031305] epoch 1/20 micro_batch 150/943 loss=0.4124
+[mamba_20260423_031305] epoch 1/20 micro_batch 200/943 loss=0.4619
+[mamba_20260423_031305] epoch 1/20 micro_batch 250/943 loss=0.4621
+[mamba_20260423_031305] epoch 1/20 micro_batch 300/943 loss=0.5025
+[mamba_20260423_031305] epoch 1/20 micro_batch 350/943 loss=0.6533
+[mamba_20260423_031305] epoch 1/20 micro_batch 400/943 loss=0.4133
+[mamba_20260423_031305] epoch 1/20 micro_batch 450/943 loss=0.4921
+[mamba_20260423_031305] epoch 1/20 micro_batch 500/943 loss=0.3263
+[mamba_20260423_031305] epoch 1/20 micro_batch 550/943 loss=0.4402
+[mamba_20260423_031305] epoch 1/20 micro_batch 600/943 loss=0.5818
+[mamba_20260423_031305] epoch 1/20 micro_batch 650/943 loss=0.4103
+[mamba_20260423_031305] epoch 1/20 micro_batch 700/943 loss=0.3705
+[mamba_20260423_031305] epoch 1/20 micro_batch 750/943 loss=0.3779
+[mamba_20260423_031305] epoch 1/20 micro_batch 800/943 loss=0.7027
+[mamba_20260423_031305] epoch 1/20 micro_batch 850/943 loss=0.5266
+[mamba_20260423_031305] epoch 1/20 micro_batch 900/943 loss=0.4821
+[mamba_20260423_031305] epoch 1/20 train_loss=0.4781 val_ap_risk_05s=0.2887 val_ap_risk_1s=0.3050 val_ADE_xy=0.6864 val_latency_ms/sample=62.427
+[mamba_20260423_031305] epoch 2/20 micro_batch 50/943 loss=0.5347
+[mamba_20260423_031305] epoch 2/20 micro_batch 100/943 loss=0.2436
+[mamba_20260423_031305] epoch 2/20 micro_batch 150/943 loss=0.3106
+[mamba_20260423_031305] epoch 2/20 micro_batch 200/943 loss=0.5342
+[mamba_20260423_031305] epoch 2/20 micro_batch 250/943 loss=0.7876
+[mamba_20260423_031305] epoch 2/20 micro_batch 300/943 loss=0.4468
+[mamba_20260423_031305] epoch 2/20 micro_batch 350/943 loss=0.4182
+[mamba_20260423_031305] epoch 2/20 micro_batch 400/943 loss=0.6513
+[mamba_20260423_031305] epoch 2/20 micro_batch 450/943 loss=0.4329
+[mamba_20260423_031305] epoch 2/20 micro_batch 500/943 loss=0.3125
+[mamba_20260423_031305] epoch 2/20 micro_batch 550/943 loss=0.4757
+[mamba_20260423_031305] epoch 2/20 micro_batch 600/943 loss=0.4199
+[mamba_20260423_031305] epoch 2/20 micro_batch 650/943 loss=0.3359
+[mamba_20260423_031305] epoch 2/20 micro_batch 700/943 loss=0.3878
+[mamba_20260423_031305] epoch 2/20 micro_batch 750/943 loss=0.5202
+[mamba_20260423_031305] epoch 2/20 micro_batch 800/943 loss=0.3878
+[mamba_20260423_031305] epoch 2/20 micro_batch 850/943 loss=0.4521
+[mamba_20260423_031305] epoch 2/20 micro_batch 900/943 loss=0.4167
+[mamba_20260423_031305] epoch 2/20 train_loss=0.4594 val_ap_risk_05s=0.3300 val_ap_risk_1s=0.3436 val_ADE_xy=0.6912 val_latency_ms/sample=58.052
+[mamba_20260423_031305] epoch 3/20 micro_batch 50/943 loss=0.2934
+[mamba_20260423_031305] epoch 3/20 micro_batch 100/943 loss=0.4624
+[mamba_20260423_031305] epoch 3/20 micro_batch 150/943 loss=0.3760
+[mamba_20260423_031305] epoch 3/20 micro_batch 200/943 loss=0.4205
+[mamba_20260423_031305] epoch 3/20 micro_batch 250/943 loss=0.5958
+[mamba_20260423_031305] epoch 3/20 micro_batch 300/943 loss=0.3644
+[mamba_20260423_031305] epoch 3/20 micro_batch 350/943 loss=0.3100
+[mamba_20260423_031305] epoch 3/20 micro_batch 400/943 loss=0.3334
+[mamba_20260423_031305] epoch 3/20 micro_batch 450/943 loss=0.5851
+[mamba_20260423_031305] epoch 3/20 micro_batch 500/943 loss=0.4469
+[mamba_20260423_031305] epoch 3/20 micro_batch 550/943 loss=0.3190
+[mamba_20260423_031305] epoch 3/20 micro_batch 600/943 loss=0.3480
+[mamba_20260423_031305] epoch 3/20 micro_batch 650/943 loss=0.3076
+[mamba_20260423_031305] epoch 3/20 micro_batch 700/943 loss=0.5397
+[mamba_20260423_031305] epoch 3/20 micro_batch 750/943 loss=0.3711
+[mamba_20260423_031305] epoch 3/20 micro_batch 800/943 loss=0.2534
+[mamba_20260423_031305] epoch 3/20 micro_batch 850/943 loss=0.4617
+[mamba_20260423_031305] epoch 3/20 micro_batch 900/943 loss=0.3093
+[mamba_20260423_031305] epoch 3/20 train_loss=0.4463 val_ap_risk_05s=0.2876 val_ap_risk_1s=0.3287 val_ADE_xy=0.6838 val_latency_ms/sample=59.693
+[mamba_20260423_031305] epoch 4/20 micro_batch 50/943 loss=0.4362
+[mamba_20260423_031305] epoch 4/20 micro_batch 100/943 loss=0.3849
+[mamba_20260423_031305] epoch 4/20 micro_batch 150/943 loss=0.3726
+[mamba_20260423_031305] epoch 4/20 micro_batch 200/943 loss=0.5241
+[mamba_20260423_031305] epoch 4/20 micro_batch 250/943 loss=0.3145
+[mamba_20260423_031305] epoch 4/20 micro_batch 300/943 loss=0.4555
+[mamba_20260423_031305] epoch 4/20 micro_batch 350/943 loss=0.3527
+[mamba_20260423_031305] epoch 4/20 micro_batch 400/943 loss=0.4162
+[mamba_20260423_031305] epoch 4/20 micro_batch 450/943 loss=0.4876
+[mamba_20260423_031305] epoch 4/20 micro_batch 500/943 loss=0.4787
+[mamba_20260423_031305] epoch 4/20 micro_batch 550/943 loss=0.3868
+[mamba_20260423_031305] epoch 4/20 micro_batch 600/943 loss=0.2972
+[mamba_20260423_031305] epoch 4/20 micro_batch 650/943 loss=0.5236
+[mamba_20260423_031305] epoch 4/20 micro_batch 700/943 loss=0.3656
+[mamba_20260423_031305] epoch 4/20 micro_batch 750/943 loss=0.5572
+[mamba_20260423_031305] epoch 4/20 micro_batch 800/943 loss=0.4531
+[mamba_20260423_031305] epoch 4/20 micro_batch 850/943 loss=0.5137
+[mamba_20260423_031305] epoch 4/20 micro_batch 900/943 loss=0.2514
+[mamba_20260423_031305] epoch 4/20 train_loss=0.4380 val_ap_risk_05s=0.3403 val_ap_risk_1s=0.3642 val_ADE_xy=0.6961 val_latency_ms/sample=59.822
+[mamba_20260423_031305] epoch 5/20 micro_batch 50/943 loss=0.4743
+[mamba_20260423_031305] epoch 5/20 micro_batch 100/943 loss=0.4613
+[mamba_20260423_031305] epoch 5/20 micro_batch 150/943 loss=0.3490
+[mamba_20260423_031305] epoch 5/20 micro_batch 200/943 loss=0.5189
+[mamba_20260423_031305] epoch 5/20 micro_batch 250/943 loss=0.4936
+[mamba_20260423_031305] epoch 5/20 micro_batch 300/943 loss=0.4079
+[mamba_20260423_031305] epoch 5/20 micro_batch 350/943 loss=0.4021
+[mamba_20260423_031305] epoch 5/20 micro_batch 400/943 loss=0.3251
+[mamba_20260423_031305] epoch 5/20 micro_batch 450/943 loss=0.4826
+[mamba_20260423_031305] epoch 5/20 micro_batch 500/943 loss=0.3756
+[mamba_20260423_031305] epoch 5/20 micro_batch 550/943 loss=0.3896
+[mamba_20260423_031305] epoch 5/20 micro_batch 600/943 loss=0.4070
+[mamba_20260423_031305] epoch 5/20 micro_batch 650/943 loss=0.3136
+[mamba_20260423_031305] epoch 5/20 micro_batch 700/943 loss=0.4793
+[mamba_20260423_031305] epoch 5/20 micro_batch 750/943 loss=0.4167
+[mamba_20260423_031305] epoch 5/20 micro_batch 800/943 loss=0.4816
+[mamba_20260423_031305] epoch 5/20 micro_batch 850/943 loss=0.3824
+[mamba_20260423_031305] epoch 5/20 micro_batch 900/943 loss=0.6320
+[mamba_20260423_031305] epoch 5/20 train_loss=0.4255 val_ap_risk_05s=0.3901 val_ap_risk_1s=0.4429 val_ADE_xy=0.6824 val_latency_ms/sample=59.249
+[mamba_20260423_031305] epoch 6/20 micro_batch 50/943 loss=0.6310
+[mamba_20260423_031305] epoch 6/20 micro_batch 100/943 loss=0.3279
+[mamba_20260423_031305] epoch 6/20 micro_batch 150/943 loss=0.8002
+[mamba_20260423_031305] epoch 6/20 micro_batch 200/943 loss=0.3721
+[mamba_20260423_031305] epoch 6/20 micro_batch 250/943 loss=0.3780
+[mamba_20260423_031305] epoch 6/20 micro_batch 300/943 loss=0.5851
+[mamba_20260423_031305] epoch 6/20 micro_batch 350/943 loss=0.6870
+[mamba_20260423_031305] epoch 6/20 micro_batch 400/943 loss=0.5075
+[mamba_20260423_031305] epoch 6/20 micro_batch 450/943 loss=0.2820
+[mamba_20260423_031305] epoch 6/20 micro_batch 500/943 loss=0.2920
+[mamba_20260423_031305] epoch 6/20 micro_batch 550/943 loss=0.4465
+[mamba_20260423_031305] epoch 6/20 micro_batch 600/943 loss=0.4480
+[mamba_20260423_031305] epoch 6/20 micro_batch 650/943 loss=0.3412
+[mamba_20260423_031305] epoch 6/20 micro_batch 700/943 loss=0.3643
+[mamba_20260423_031305] epoch 6/20 micro_batch 750/943 loss=0.4721
+[mamba_20260423_031305] epoch 6/20 micro_batch 800/943 loss=0.4686
+[mamba_20260423_031305] epoch 6/20 micro_batch 850/943 loss=0.2555
+[mamba_20260423_031305] epoch 6/20 micro_batch 900/943 loss=0.5426
+[mamba_20260423_031305] epoch 6/20 train_loss=0.4207 val_ap_risk_05s=0.4523 val_ap_risk_1s=0.4613 val_ADE_xy=0.6862 val_latency_ms/sample=59.023
+[mamba_20260423_031305] epoch 7/20 micro_batch 50/943 loss=0.4672
