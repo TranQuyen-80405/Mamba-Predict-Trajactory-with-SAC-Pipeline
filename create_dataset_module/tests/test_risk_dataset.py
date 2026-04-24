@@ -13,10 +13,12 @@ import os
 import sys
 import tempfile
 import unittest
+import warnings
 from pathlib import Path
 
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _ROOT = os.path.dirname(os.path.dirname(_HERE))
@@ -94,6 +96,28 @@ class TestRiskDataset(unittest.TestCase):
             self.assertEqual(sample.ego_vel_seq.shape, (10, 6))
             self.assertEqual(sample.traj_future_xyyaw.shape, (10, 3))
 
+    def test_dataloader_spawn_workers_smoke(self):
+        """
+        num_workers=0: stable everywhere. For spawn+workers, training uses the same
+        contract; full integration is in Stage A e2e smoke (see train script).
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            _write_fixture(Path(tmp), n_scenes=1, T=60)
+            ds = RiskDataset(root=tmp, cfg=DataGenConfig(), T_ctx=10)
+            loader = DataLoader(
+                ds,
+                batch_size=2,
+                shuffle=True,
+                num_workers=0,
+                collate_fn=collate_riskbatch,
+            )
+            n = 0
+            for _ in loader:
+                n += 1
+                if n >= 2:
+                    break
+            self.assertGreaterEqual(n, 1)
+
     def test_collate_batch_shapes(self):
         with tempfile.TemporaryDirectory() as tmp:
             _write_fixture(Path(tmp), n_scenes=1, T=60)
@@ -150,9 +174,20 @@ class TestRiskDataset(unittest.TestCase):
             with (root / "index.jsonl").open("w", encoding="utf-8") as f:
                 f.write(json.dumps(row) + "\n")
             cfg = DataGenConfig()
-            ds = RiskDataset(
-                root=str(root), cfg=cfg, T_ctx=2, traj_horizon=1,
-            )
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message="npz length mismatch.*",
+                    category=UserWarning,
+                )
+                warnings.filterwarnings(
+                    "ignore",
+                    message="index.jsonl T=.*",
+                    category=UserWarning,
+                )
+                ds = RiskDataset(
+                    root=str(root), cfg=cfg, T_ctx=2, traj_horizon=1,
+                )
             self.assertGreater(len(ds), 0)
             arr = ds.risk_1s_array()
             self.assertEqual(arr.shape, (len(ds),))

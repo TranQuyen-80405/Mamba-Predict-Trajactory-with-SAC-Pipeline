@@ -39,15 +39,15 @@ Default workflow now requires BEV cache at `<data_root>_bev_cache`.
 
 ```bash
 python scripts/cache_pointpillars_bev.py \
-  --data_root data/stage_a_experiment_2gpu_balanced_v5 \
+  --data_root data/stage_a_experiment_2gpu_balanced_v8 \
   --ckpt PointPillars_module/pretrained/epoch_160_raw.pth \
-  --out_root data/stage_a_experiment_2gpu_balanced_v5_bev_cache
+  --out_root data/stage_a_experiment_2gpu_balanced_v8_bev_cache
 ```
 
 ## Check existing dataset stats
 
 ```bash
-python run_dataset_stats.py --data_root data/stage_a_experiment --T_ctx 40 --traj_horizon 10
+python run_dataset_stats.py --data_root data/stage_a_experiment_2gpu_balanced_v8 --T_ctx 40 --traj_horizon 10
 ```
 
 This inspects `index.jsonl` + on-disk rollouts and prints:
@@ -59,7 +59,7 @@ Recommended balanced dataset preset for Stage-A comparison on 2x 5060 Ti:
 
 ```bash
 python run_datagen_preset.py experiment_2gpu
-python run_dataset_stats.py --data_root data/stage_a_experiment_2gpu --T_ctx 20 --traj_horizon 10
+python run_dataset_stats.py --data_root data/stage_a_experiment_2gpu_balanced_v8 --T_ctx 40 --traj_horizon 10
 ```
 
 ## Tests

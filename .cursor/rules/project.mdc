@@ -98,8 +98,7 @@ PointPillars_module/
 │   └── full_pipeline_risk_traj.py # FullPipeline + TrajectoryHead; forward → (risk_logits, traj)
 ├── dataset_generator.py          # PyBullet offline rollouts → .npz per rollout
 ├── risk_dataset.py               # torch Dataset + collate_fn (per-time-step list batching)
-├── training/                     # Stage A CLI + shared loop (TB, metrics.jsonl, checkpoints)
-│   ├── stage_a_single_run.py
+├── training/                     # Stage A CLI (TB, metrics.jsonl, checkpoints)
 │   ├── train_stage_a_mamba.py
 │   ├── train_stage_a_rnn_gru.py
 │   ├── train_stage_a_lstm.py

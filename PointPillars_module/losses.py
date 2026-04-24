@@ -20,9 +20,46 @@ from typing import Iterable, List, Optional, Sequence, Union
 
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.nn.functional as F
 
 _NUMERIC_EPS = 1e-8
+
+
+class MultiTaskLossWrapper(nn.Module):
+    """
+    Homoscedastic uncertainty weighting for two-task optimization.
+
+    Kendall et al. (2018):
+        L = exp(-s1) * L1 + s1 + exp(-s2) * L2 + s2
+    where s1,s2 are learnable log variances.
+    """
+
+    def __init__(
+        self,
+        init_log_var_risk: float = 0.0,
+        init_log_var_traj: float = 0.0,
+        log_var_min: float = -5.0,
+        log_var_max: float = 5.0,
+    ) -> None:
+        super().__init__()
+        self.log_var_risk = nn.Parameter(torch.tensor(float(init_log_var_risk)))
+        self.log_var_traj = nn.Parameter(torch.tensor(float(init_log_var_traj)))
+        self.log_var_min = float(log_var_min)
+        self.log_var_max = float(log_var_max)
+        if self.log_var_min >= self.log_var_max:
+            raise ValueError("log_var_min must be < log_var_max")
+
+    def _clamped(self, x: torch.Tensor) -> torch.Tensor:
+        return torch.clamp(x, min=self.log_var_min, max=self.log_var_max)
+
+    def forward(self, loss_risk: torch.Tensor, loss_traj: torch.Tensor) -> torch.Tensor:
+        s_risk = self._clamped(self.log_var_risk)
+        s_traj = self._clamped(self.log_var_traj)
+        return (
+            torch.exp(-s_risk) * loss_risk + s_risk
+            + torch.exp(-s_traj) * loss_traj + s_traj
+        )
 
 
 def focal_bce(
@@ -134,4 +171,4 @@ def oversample_positive_indices(
     return out
 
 
-__all__ = ["focal_bce", "oversample_positive_indices"]
+__all__ = ["focal_bce", "oversample_positive_indices", "MultiTaskLossWrapper"]

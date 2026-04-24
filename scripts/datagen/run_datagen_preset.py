@@ -69,23 +69,28 @@ def _cfg_experiment_2gpu() -> DataGenConfig:
       - keep the set small enough for 4-backbone compare runs
       - target risk_1s class balance in the 5-30% QA band
       - preserve shortcut-buster coverage via StationaryPolicy
+      - keep episodes long enough that ``risk_05s`` positives exist under
+        ``T_ctx=40`` windowing (avoid truncating immediately on contact)
     """
     return DataGenConfig(
-        out_dir=os.path.join(_HERE, "data", "stage_a_experiment_2gpu_balanced_v7"),
-        n_scenes=32,
-        rollouts_per_scene=4,
-        frames_per_rollout=220,
-        # 90% mostly-safe behavior
-        policy_random_p=0.55,
-        policy_scripted_p=0.35,
-        # 10% risky/shortcut-buster behavior
-        policy_adversarial_p=0.05,
-        policy_stationary_p=0.05,
+        out_dir=os.path.join(_HERE, "data", "stage_a_experiment_2gpu_balanced_v8"),
+        n_scenes=48,
+        rollouts_per_scene=6,
+        frames_per_rollout=360,
+        # Mostly-safe navigation with a small risky tail to create positives
+        # for short horizons without flooding the dataset with positives.
+        policy_random_p=0.62,
+        policy_scripted_p=0.33,
+        policy_adversarial_p=0.03,
+        policy_stationary_p=0.02,
         camera_jitter_deg=0.0,
+        # End episodes on contact (keeps positives rare) but keep a short
+        # post-contact tail so ``risk_05s`` lookahead can still observe contact
+        # within the 0.5s window for frames shortly before impact.
         terminate_on_contact=True,
-        post_contact_grace_frames=0,
+        post_contact_grace_frames=30,
         save_rgb=False,
-        seed=23,
+        seed=25,
     )
 
 

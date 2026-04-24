@@ -76,6 +76,28 @@ def _preprocess_depth_to_pts(
     return pts4.astype(np.float32, copy=False)
 
 
+def _sanitize_depth_m(depth_m: np.ndarray, max_range_m: float) -> np.ndarray:
+    """
+    Depth should be meters in [0, max_range]; non-finite values are treated as
+    invalid range and become max_range so they naturally drop out in
+    ``depth_to_points_camera`` filtering.
+    """
+    # NumPy 2.x: avoid copy=False here — may require a copy for dtype conversion.
+    d = np.asarray(depth_m, dtype=np.float32)
+    if not np.isfinite(d).all():
+        d = np.nan_to_num(d, nan=float(max_range_m), posinf=float(max_range_m), neginf=0.0)
+    # Clamp negatives (shouldn't happen, but sim noise can).
+    d = np.clip(d, 0.0, float(max_range_m))
+    return d
+
+
+def _finite_float32(x: np.ndarray) -> np.ndarray:
+    y = np.asarray(x, dtype=np.float32)
+    if np.isfinite(y).all():
+        return y
+    return np.nan_to_num(y, nan=0.0, posinf=0.0, neginf=0.0)
+
+
 # ---------------------------------------------------------------------
 # Split helper (§ 5.6 scene-stratified)
 # ---------------------------------------------------------------------
@@ -357,15 +379,15 @@ class RiskDataset(Dataset):
             r05, r1, r2, Teff = cache[p]
             t = int(meta["t"])
             remain = Teff - t
-            if remain >= self.h_05s:
+            if remain >= self.h_05s and np.isfinite(r05[t]):
                 valid["risk_05s"] += 1
                 if r05[t] > 0.5:
                     pos["risk_05s"] += 1
-            if remain >= self.h_1s:
+            if remain >= self.h_1s and np.isfinite(r1[t]):
                 valid["risk_1s"] += 1
                 if r1[t] > 0.5:
                     pos["risk_1s"] += 1
-            if remain >= self.h_2s:
+            if remain >= self.h_2s and np.isfinite(r2[t]):
                 valid["risk_2s"] += 1
                 if r2[t] > 0.5:
                     pos["risk_2s"] += 1
@@ -407,7 +429,9 @@ class RiskDataset(Dataset):
                 pts_seq.append(self._load_bev_cached(bev_path))
                 continue
 
-            depth_m = traj.depth[tau].astype(np.float32)
+            depth_m = _sanitize_depth_m(
+                traj.depth[tau], float(self.preprocess_cfg.max_range)
+            )
             # Keep depth-camera modality (D435i-like), then map camera axes
             # into a KITTI-style local frame for PointPillars.
             # NOTE:
@@ -425,8 +449,8 @@ class RiskDataset(Dataset):
 
             if conv == "from_trajectory":
                 extrinsics = CameraToLidarExtrinsics(
-                    R=traj.cam_extr_R[tau].astype(np.float32),
-                    t=traj.cam_extr_t[tau].astype(np.float32),
+                    R=_finite_float32(traj.cam_extr_R[tau]),
+                    t=_finite_float32(traj.cam_extr_t[tau]),
                     convention="identity",
                 )
             else:
@@ -458,7 +482,7 @@ class RiskDataset(Dataset):
         else:
             ego_vel_seq = torch.empty((T_ctx, 0), dtype=torch.float32)
         H = self.traj_horizon
-        fut = traj.ego_state[t + 1 : t + 1 + H, :].astype(np.float32)
+        fut = _finite_float32(traj.ego_state[t + 1 : t + 1 + H, :])
         traj_future = fut[:, [0, 1, 5]].copy()
         T = int(traj.T)
         remain = T - t  # frames from t inclusive to end-1; lookahead [t : t+H) needs remain >= H
@@ -470,13 +494,17 @@ class RiskDataset(Dataset):
             ],
             dtype=torch.float32,
         )
+        r05 = float(np.nan_to_num(float(traj.risk_05s[t]), nan=0.0, posinf=0.0, neginf=0.0))
+        r1 = float(np.nan_to_num(float(traj.risk_1s[t]), nan=0.0, posinf=0.0, neginf=0.0))
+        r2 = float(np.nan_to_num(float(traj.risk_2s[t]), nan=0.0, posinf=0.0, neginf=0.0))
+
         return RiskSample(
             pts_seq=pts_seq,
             action_seq=action_seq,
             ego_vel_seq=ego_vel_seq,
-            risk_05s=torch.tensor(float(traj.risk_05s[t]), dtype=torch.float32),
-            risk_1s=torch.tensor(float(traj.risk_1s[t]), dtype=torch.float32),
-            risk_2s=torch.tensor(float(traj.risk_2s[t]), dtype=torch.float32),
+            risk_05s=torch.tensor(r05, dtype=torch.float32),
+            risk_1s=torch.tensor(r1, dtype=torch.float32),
+            risk_2s=torch.tensor(r2, dtype=torch.float32),
             risk_label_valid=valid,
             traj_future_xyyaw=torch.from_numpy(traj_future),
             scene_id=int(meta["scene_id"]),
@@ -524,7 +552,10 @@ class RiskDataset(Dataset):
                     )
                     warned_paths.add(p)
                 ti = max(0, arr.shape[0] - 1)
-            out[i] = float(arr[ti])
+            v = float(arr[ti])
+            if not np.isfinite(v):
+                v = 0.0
+            out[i] = v
         return out
 
 
@@ -568,9 +599,11 @@ def collate_riskbatch(samples: Sequence[RiskSample]) -> RiskBatch:
         if not can_stack_bev:
             break
     if can_stack_bev:
+        # Avoid an extra contiguous() copy here: DataLoader workers already
+        # spend significant time stacking large BEV tensors.
         pts_seq = torch.stack(
             [torch.stack(frame, dim=0) for frame in pts_seq_lists], dim=0
-        ).contiguous()
+        )
     else:
         pts_seq = pts_seq_lists
     action_seq = torch.stack([s.action_seq for s in samples], dim=0)

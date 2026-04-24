@@ -87,6 +87,11 @@ This document summarizes **failed runs**, **errors**, **root causes**, and **mit
 - BEV cache: `scripts/cache_pointpillars_bev.py` (match `extrinsics` + `spatial_downsample` with training)
 - Logs: often `tee` to `runs/stage_a_compare/train.log` + TensorBoard on `log_root`
 
+## 10. Historical note (training entrypoint)
+
+- `PointPillars_module/training/stage_a_single_run.py` existed in prior revisions as a shared Stage-A wrapper.
+- It was removed from the active repo layout; Stage-A CLI entrypoints now route directly through `training/train_stage_a_compare.py`.
+
 ---
 
 *Compiled from debug iterations: Ubuntu + venv, PyTorch CUDA, 2× GPU, four-backbone compare, BEV cache, DDP.*  
