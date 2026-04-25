@@ -9,15 +9,15 @@ git clone -b devices/RTX-4070S https://github.com/TranQuyen-80405/Mamba-Predict-
 cd Mamba-Predict-Trajactory-with-SAC-Pipeline
 ```
 
-## 2. Cài đặt Môi trường Python (.venv)
+## 2. Cài đặt Môi trường Python (.venv-backups)
 Dự án sử dụng một script chuẩn bị sẵn để cài đặt toàn bộ CUDA, PyTorch, Mamba-ssm và các thư viện cần thiết.
-**Tuyệt đối không dùng `pip install` chay** để tránh xung đột version. Hãy chạy script:
+**Tuyệt đối không dùng `pip install` chay** để tránh xung đột version. Hãy chạy script với biến môi trường `VENV_DIR=.venv-backups` để tạo đúng tên thư mục môi trường y hệt máy hiện tại:
 
 ```bash
 chmod +x scripts/setup_train_env_ubuntu2404.sh
-./scripts/setup_train_env_ubuntu2404.sh
+VENV_DIR=.venv-backups ./scripts/setup_train_env_ubuntu2404.sh
 ```
-Sau khi cài đặt thành công, đổi tên hoặc tạo symlink thư mục môi trường thành `.venv-backups` (hoặc đảm bảo bạn đang kích hoạt đúng môi trường dự phòng `.venv-backups`):
+Sau khi cài đặt thành công, hãy đảm bảo bạn đang kích hoạt đúng môi trường dự phòng `.venv-backups`:
 ```bash
 source .venv-backups/bin/activate
 ```
