@@ -17,9 +17,9 @@ Dự án sử dụng một script chuẩn bị sẵn để cài đặt toàn b�
 chmod +x scripts/setup_train_env_ubuntu2404.sh
 ./scripts/setup_train_env_ubuntu2404.sh
 ```
-Sau khi chạy xong, môi trường sẽ nằm ở thư mục `.venv-linux-2404`. Hãy kích hoạt nó:
+Sau khi cài đặt thành công, đổi tên hoặc tạo symlink thư mục môi trường thành `.venv-backups` (hoặc đảm bảo bạn đang kích hoạt đúng môi trường dự phòng `.venv-backups`):
 ```bash
-source .venv-linux-2404/bin/activate
+source .venv-backups/bin/activate
 ```
 
 ## 3. Chuyển Dữ liệu (Raw Data)
@@ -68,7 +68,7 @@ Kết quả sẽ được lưu tại `runs/compare_baselines/`. Bạn có thể 
 
 ---
 ## Tóm tắt Checklist Bắt buộc cho một AI Agent mới:
-1. ✅ **Kích hoạt Virtual Env:** Phải gọi `source .venv-linux-2404/bin/activate` hoặc gọi trực tiếp `./.venv-linux-2404/bin/python` trước khi làm bất cứ việc gì.
+1. ✅ **Kích hoạt Virtual Env:** Phải gọi `source .venv-backups/bin/activate` hoặc gọi trực tiếp `./.venv-backups/bin/python` trước khi làm bất cứ việc gì.
 2. ✅ **Kiểm tra File:** Đảm bảo tồn tại Raw Data và Cache BEV V5 trước khi chạy train.
 3. ✅ **Nguyên tắc Sửa code:** Khi muốn thêm hay chỉnh sửa code Baseline, **CHỈ THAO TÁC** bên trong folder `Compare-with-other`. TUYỆT ĐỐI KHÔNG sửa hay can thiệp các file hệ thống lõi trong `PointPillars_module` để đảm bảo tính khách quan khi so sánh.
 4. ✅ **Đánh giá Metric:** Luôn luôn so sánh hiệu năng dựa trên file `val_metrics_final.json` nằm trong các thư mục con của `runs/`.
