@@ -21,6 +21,9 @@ class FullPipelineRiskAndTraj(FullPipeline):
     """
     Same backbone as ``FullPipeline``; adds ``TrajectoryHead`` on the same ``h_T``.
     ``forward`` returns ``(risk_logits, traj_pred)`` with ``traj_pred`` shape ``(B, H, 3)``.
+
+    Optional **learnable multi-task loss** (Kendall-style): ``log_vars[0:2]`` so
+    ``L = exp(-v_1) * L_risk + exp(-v_2) * L_traj + v_1 + v_2``, with ``v_i`` init 0.
     """
 
     def __init__(
@@ -34,6 +37,7 @@ class FullPipelineRiskAndTraj(FullPipeline):
         traj_head: Optional[TrajectoryHead] = None,
         bev_channels: int = 384,
         token_dim: int = 256,
+        learnable_task_loss: bool = True,
     ) -> None:
         super().__init__(
             pp,
@@ -47,6 +51,10 @@ class FullPipelineRiskAndTraj(FullPipeline):
         self.traj_head = traj_head or TrajectoryHead(
             in_dim=token_dim, horizon=self.traj_horizon
         )
+        if learnable_task_loss:
+            self.log_vars: Optional[nn.Parameter] = nn.Parameter(torch.zeros(2))
+        else:
+            self.log_vars = None
 
     def forward(
         self,

@@ -82,6 +82,7 @@ def run_experiment(
     depth_scale_factor: float = 1.0,
     risk_label_smoothing: float = 0.05,
     temporal_dropout: float = 0.1,
+    learnable_task_loss: bool = True,
 ) -> Dict[str, Dict[str, Union[float, str]]]:
     """
     Train each requested temporal backbone with the same data split and hyperparameters.
@@ -139,6 +140,7 @@ def run_experiment(
             depth_scale_factor=depth_scale_factor,
             risk_label_smoothing=risk_label_smoothing,
             temporal_dropout=temporal_dropout,
+            learnable_task_loss=learnable_task_loss,
         )
         results[name] = row
 
@@ -291,6 +293,11 @@ def main() -> None:
         default=0.1,
         help="Dropout on temporal encoder stacks.",
     )
+    ap.add_argument(
+        "--fixed_task_loss",
+        action="store_true",
+        help="Use fixed traj_loss_weight instead of learnable Kendall-style task weights.",
+    )
     args = ap.parse_args()
 
     run_experiment(
@@ -326,6 +333,7 @@ def main() -> None:
         depth_scale_factor=args.depth_scale_factor,
         risk_label_smoothing=args.risk_label_smoothing,
         temporal_dropout=args.temporal_dropout,
+        learnable_task_loss=not args.fixed_task_loss,
     )
 
 

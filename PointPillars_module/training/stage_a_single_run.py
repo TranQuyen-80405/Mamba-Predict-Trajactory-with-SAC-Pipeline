@@ -107,6 +107,9 @@ def _traj_error_metrics(pred: np.ndarray, gt: np.ndarray) -> Dict[str, float]:
     }
 
 
+traj_error_metrics = _traj_error_metrics
+
+
 @torch.no_grad()
 def _collect_val_metrics(
     model: FullPipelineRiskAndTraj,
@@ -199,6 +202,30 @@ def _collect_val_metrics(
     return out
 
 
+def collect_val_metrics(
+    model: Any,
+    loader: Any,
+    device: torch.device,
+    *,
+    measure_inference_latency: bool = True,
+) -> Dict[str, float]:
+    """Validation metrics; empty ``loader`` returns NaN AP / traj fields."""
+    _ = measure_inference_latency  # API parity with tests; unused for empty path
+    if not loader:
+        return {
+            "val_sample_count": 0.0,
+            "ap_risk_05s": float("nan"),
+            "ap_risk_1s": float("nan"),
+            "ap_risk_2s": float("nan"),
+            "traj_ade_xy_m": float("nan"),
+            "traj_fde_xy_m": float("nan"),
+            "traj_rmse_all": float("nan"),
+            "traj_rmse_yaw_rad": float("nan"),
+            "val_inference_ms_per_sample": float("nan"),
+        }
+    return _collect_val_metrics(model, loader, device)
+
+
 def run_stage_a_training(
     *,
     backbone: str,
@@ -235,6 +262,7 @@ def run_stage_a_training(
     depth_scale_factor: float = 1.0,
     risk_label_smoothing: float = 0.05,
     temporal_dropout: float = 0.1,
+    learnable_task_loss: bool = True,
 ) -> Dict[str, Union[float, str]]:
     backbone = validate_backbone(backbone)
     phase = validate_stage(stage)
@@ -323,22 +351,32 @@ def run_stage_a_training(
         traj_horizon=traj_horizon,
         mamba=temporal,
         token_dim=256,
+        learnable_task_loss=learnable_task_loss,
     ).to(dev)
 
     if phase == "a1":
         model.pp.freeze_all()
-        train_params = list(model.reducer.parameters()) + list(model.mamba.parameters()) + list(model.head.parameters()) + list(model.traj_head.parameters())
-        opt = torch.optim.AdamW(train_params, lr=lr, weight_decay=weight_decay)
-    else:
-        model.pp.freeze_all()
-        model.pp.unfreeze_neck()
-        neck_params = [p for p in model.pp.model.neck.parameters() if p.requires_grad]
-        rest_params = (
+        train_params = (
             list(model.reducer.parameters())
             + list(model.mamba.parameters())
             + list(model.head.parameters())
             + list(model.traj_head.parameters())
         )
+        if model.log_vars is not None:
+            train_params.append(model.log_vars)
+        opt = torch.optim.AdamW(train_params, lr=lr, weight_decay=weight_decay)
+    else:
+        model.pp.freeze_all()
+        model.pp.unfreeze_neck()
+        neck_params = [p for p in model.pp.model.neck.parameters() if p.requires_grad]
+        rest_params = [
+            *list(model.reducer.parameters()),
+            *list(model.mamba.parameters()),
+            *list(model.head.parameters()),
+            *list(model.traj_head.parameters()),
+        ]
+        if model.log_vars is not None:
+            rest_params.append(model.log_vars)
         opt = torch.optim.AdamW(
             [
                 {"params": neck_params, "lr": lr_neck, "weight_decay": weight_decay},
@@ -378,7 +416,8 @@ def run_stage_a_training(
         "seed": int(seed),
         "T_ctx": int(T_ctx),
         "traj_horizon": int(traj_horizon),
-        "traj_loss_weight": float(traj_loss_weight),
+        "traj_loss_weight": (float(traj_loss_weight) if not learnable_task_loss else None),
+        "learnable_task_loss": bool(learnable_task_loss),
         "grad_clip": float(grad_clip),
         "mamba_backend": str(mamba_backend),
         "train_val_test": list(train_val_test),
@@ -441,9 +480,16 @@ def run_stage_a_training(
                 label_smoothing=risk_label_smoothing,
             )
             loss_t = F.smooth_l1_loss(traj_pred, traj_gt)
-            loss = (loss_r + float(traj_loss_weight) * loss_t) / accum
+            if model.log_vars is not None:
+                lv = model.log_vars
+                total_mb = torch.exp(-lv[0]) * loss_r + torch.exp(-lv[1]) * loss_t + lv[0] + lv[1]
+                combined = float(total_mb.detach().item())
+            else:
+                total_mb = loss_r + float(traj_loss_weight) * loss_t
+                combined = float(total_mb.detach().item())
+            loss = total_mb / accum
             loss.backward()
-            epoch_loss += float((loss_r + float(traj_loss_weight) * loss_t).detach().item())
+            epoch_loss += combined
             n_batches += 1
 
             if ((micro_i + 1) % accum == 0) or (micro_i + 1 == len(train_loader)):
@@ -455,9 +501,16 @@ def run_stage_a_training(
             if (micro_i + 1) % 100 == 0:
                 print(
                     f"[{rn}] epoch {epoch + 1}/{epochs} micro_batch {micro_i + 1}/{len(train_loader)} "
-                    f"loss={float((loss_r + float(traj_loss_weight) * loss_t).detach().item()):.4f}",
+                    f"loss={combined:.4f}",
                     flush=True,
                 )
+
+        if model.log_vars is not None:
+            lv = model.log_vars.detach()
+            writer.add_scalar("train/precision_risk", float(torch.exp(-lv[0])), epoch)
+            writer.add_scalar("train/precision_traj", float(torch.exp(-lv[1])), epoch)
+            writer.add_scalar("train/log_var_risk", float(lv[0]), epoch)
+            writer.add_scalar("train/log_var_traj", float(lv[1]), epoch)
 
         train_loss = epoch_loss / max(1, n_batches)
         metrics = _collect_val_metrics(model, val_loader, dev)
@@ -532,8 +585,24 @@ def run_stage_a_training(
     return row
 
 
-def main_cli(default_backbone: str) -> None:
-    ap = argparse.ArgumentParser(description=f"Stage A single-backbone trainer ({default_backbone})")
+def main_cli(default_backbone: Optional[str] = None) -> None:
+    desc = (
+        f"Stage A single-backbone trainer ({default_backbone})"
+        if default_backbone
+        else "Stage A single-backbone trainer"
+    )
+    ap = argparse.ArgumentParser(description=desc)
+    if default_backbone is not None:
+        bb = validate_backbone(default_backbone)
+    else:
+        bb = None
+        ap.add_argument(
+            "--backbone",
+            type=str,
+            required=True,
+            choices=list(STAGE_A_BACKBONES),
+            help="Temporal backbone (mamba, gru, lstm, transformer).",
+        )
     ap.add_argument("--data_root", type=str, required=True)
     ap.add_argument("--ckpt", type=str, default=str(_PKG_ROOT / "pretrained" / "epoch_160_raw.pth"))
     ap.add_argument("--epochs", type=int, default=20)
@@ -564,10 +633,16 @@ def main_cli(default_backbone: str) -> None:
     ap.add_argument("--depth_scale_factor", type=float, default=1.0)
     ap.add_argument("--risk_label_smoothing", type=float, default=0.05)
     ap.add_argument("--temporal_dropout", type=float, default=0.1)
+    ap.add_argument(
+        "--fixed_task_loss",
+        action="store_true",
+        help="Use L = L_risk + traj_loss_weight * L_traj. Default: learnable v_i (Kendall).",
+    )
     args = ap.parse_args()
 
+    backbone = bb if default_backbone is not None else validate_backbone(getattr(args, "backbone", ""))
     run_stage_a_training(
-        backbone=default_backbone,
+        backbone=backbone,
         data_root=args.data_root,
         ckpt_path=args.ckpt,
         epochs=args.epochs,
@@ -599,5 +674,10 @@ def main_cli(default_backbone: str) -> None:
         depth_scale_factor=args.depth_scale_factor,
         risk_label_smoothing=args.risk_label_smoothing,
         temporal_dropout=args.temporal_dropout,
+        learnable_task_loss=not args.fixed_task_loss,
     )
+
+
+if __name__ == "__main__":
+    main_cli(None)
 
