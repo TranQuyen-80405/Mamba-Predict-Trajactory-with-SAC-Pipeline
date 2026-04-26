@@ -1,0 +1,53 @@
+{
+  "mamba": {
+    "traj_rmse_all": 0.6849402118423871,
+    "traj_ade_xy_m": 0.5118582449923678,
+    "traj_fde_xy_m": 0.528612666964265,
+    "traj_rmse_yaw_rad": 1.0412977466777822,
+    "ap_risk_05s": 0.2872983270212993,
+    "auc_risk_05s": 0.6221077568407555,
+    "ap_risk_1s": 0.3175401182006816,
+    "auc_risk_1s": 0.6408639998013508,
+    "ap_risk_2s": 0.18504593653529178,
+    "auc_risk_2s": 0.5194793677291459,
+    "brier_risk_avg": 0.26229633390903473,
+    "val_inference_ms_per_sample": 3.3984165674931295,
+    "run_name": "mamba_20260424_224109",
+    "log_dir": "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/runs/stage_a_compare_turn-2_V5/mamba_20260424_224109",
+    "checkpoint_dir": "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/runs/stage_a_compare_turn-2_V5/checkpoints/mamba_risk_16epochs"
+  },
+  "gru": {
+    "traj_rmse_all": 0.7634230282841041,
+    "traj_ade_xy_m": 0.4970599084653992,
+    "traj_fde_xy_m": 0.5272040150681622,
+    "traj_rmse_yaw_rad": 1.2039353508322028,
+    "ap_risk_05s": 0.24650782710125446,
+    "auc_risk_05s": 0.6166612331833692,
+    "ap_risk_1s": 0.2784538394821465,
+    "auc_risk_1s": 0.7191069477552641,
+    "ap_risk_2s": 0.16554390463270108,
+    "auc_risk_2s": 0.45522458135531324,
+    "brier_risk_avg": 0.26232583324114483,
+    "val_inference_ms_per_sample": 3.682942760957254,
+    "run_name": "gru_20260425_072516",
+    "log_dir": "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/runs/stage_a_compare_turn-2_V5/gru_20260425_072516",
+    "checkpoint_dir": "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/runs/stage_a_compare_turn-2_V5/checkpoints/gru_risk_14epochs"
+  },
+  "lstm": {
+    "traj_rmse_all": 0.5614271785043174,
+    "traj_ade_xy_m": 0.4529624385383139,
+    "traj_fde_xy_m": 0.48746940938510713,
+    "traj_rmse_yaw_rad": 0.817351470514164,
+    "ap_risk_05s": 0.3559607922908286,
+    "auc_risk_05s": 0.6455260698528613,
+    "ap_risk_1s": 0.29742463600859476,
+    "auc_risk_1s": 0.6325393573698848,
+    "ap_risk_2s": 0.2117878481923162,
+    "auc_risk_2s": 0.5821691272366842,
+    "brier_risk_avg": 0.2481438865264257,
+    "val_inference_ms_per_sample": 3.7693985120670215,
+    "run_name": "lstm_20260425_150633",
+    "log_dir": "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/runs/stage_a_compare_turn-2_V5/lstm_20260425_150633",
+    "checkpoint_dir": "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/runs/stage_a_compare_turn-2_V5/checkpoints/lstm_risk_17epochs"
+  }
+}

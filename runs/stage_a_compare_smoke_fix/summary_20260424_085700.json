@@ -1,0 +1,19 @@
+{
+  "gru": {
+    "traj_rmse_all": 0.7775336770752602,
+    "traj_ade_xy_m": 0.3911270465033527,
+    "traj_fde_xy_m": 0.419604512766273,
+    "traj_rmse_yaw_rad": 1.2687664259613622,
+    "ap_risk_05s": 0.2183205791151358,
+    "auc_risk_05s": 0.46499242111065175,
+    "ap_risk_1s": 0.2206608907270029,
+    "auc_risk_1s": 0.42540556281205294,
+    "ap_risk_2s": 0.200072803436035,
+    "auc_risk_2s": 0.53990055125149,
+    "brier_risk_avg": 0.27098889648914337,
+    "val_inference_ms_per_sample": 11.832251093604349,
+    "run_name": "gru_20260424_055327",
+    "log_dir": "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/runs/stage_a_compare_smoke_fix/gru_20260424_055327",
+    "checkpoint_dir": "/workspace/Mamba-Predict-Trajactory-with-SAC-Pipeline/runs/stage_a_compare_smoke_fix/checkpoints/gru_risk_1epochs"
+  }
+}
