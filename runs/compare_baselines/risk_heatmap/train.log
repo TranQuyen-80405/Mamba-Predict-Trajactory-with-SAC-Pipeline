@@ -1,0 +1,48 @@
+[risk_heatmap] Starting training risk with heatmap
+[risk_heatmap] epoch 1/20 batch 100/224 loss=0.1448
+[risk_heatmap] epoch 1/20 batch 200/224 loss=0.1516
+[risk_heatmap] epoch 1/20 batch 224/224 loss=0.1357
+[risk_heatmap] epoch 1/20 train_loss=0.1420 val_ap_risk_05s=0.2142 val_ap_risk_1s=0.1898
+[risk_heatmap] New best model saved as best_ep1_risk_heatmap.pt! Metric: 0.1898
+[risk_heatmap] epoch 2/20 batch 100/224 loss=0.1261
+[risk_heatmap] epoch 2/20 batch 200/224 loss=0.1356
+[risk_heatmap] epoch 2/20 batch 224/224 loss=0.1423
+[risk_heatmap] epoch 2/20 train_loss=0.1410 val_ap_risk_05s=0.2086 val_ap_risk_1s=0.1887
+[risk_heatmap] No improvement for 1 epochs.
+[risk_heatmap] epoch 3/20 batch 100/224 loss=0.1484
+[risk_heatmap] epoch 3/20 batch 200/224 loss=0.1493
+[risk_heatmap] epoch 3/20 batch 224/224 loss=0.1303
+[risk_heatmap] epoch 3/20 train_loss=0.1413 val_ap_risk_05s=0.2007 val_ap_risk_1s=0.2217
+[risk_heatmap] New best model saved as best_ep3_risk_heatmap.pt! Metric: 0.2217
+[risk_heatmap] epoch 4/20 batch 100/224 loss=0.1616
+[risk_heatmap] epoch 4/20 batch 200/224 loss=0.1510
+[risk_heatmap] epoch 4/20 batch 224/224 loss=0.1332
+[risk_heatmap] epoch 4/20 train_loss=0.1406 val_ap_risk_05s=0.1950 val_ap_risk_1s=0.3354
+[risk_heatmap] New best model saved as best_ep4_risk_heatmap.pt! Metric: 0.3354
+[risk_heatmap] epoch 5/20 batch 100/224 loss=0.1310
+[risk_heatmap] epoch 5/20 batch 200/224 loss=0.1362
+[risk_heatmap] epoch 5/20 batch 224/224 loss=0.1377
+[risk_heatmap] epoch 5/20 train_loss=0.1411 val_ap_risk_05s=0.1935 val_ap_risk_1s=0.2108
+[risk_heatmap] No improvement for 1 epochs.
+[risk_heatmap] epoch 6/20 batch 100/224 loss=0.1438
+[risk_heatmap] epoch 6/20 batch 200/224 loss=0.1555
+[risk_heatmap] epoch 6/20 batch 224/224 loss=0.1576
+[risk_heatmap] epoch 6/20 train_loss=0.1398 val_ap_risk_05s=0.1931 val_ap_risk_1s=0.1951
+[risk_heatmap] No improvement for 2 epochs.
+[risk_heatmap] epoch 7/20 batch 100/224 loss=0.1314
+[risk_heatmap] epoch 7/20 batch 200/224 loss=0.1548
+[risk_heatmap] epoch 7/20 batch 224/224 loss=0.1170
+[risk_heatmap] epoch 7/20 train_loss=0.1400 val_ap_risk_05s=0.1918 val_ap_risk_1s=0.1888
+[risk_heatmap] No improvement for 3 epochs.
+[risk_heatmap] epoch 8/20 batch 100/224 loss=0.1457
+[risk_heatmap] epoch 8/20 batch 200/224 loss=0.1456
+[risk_heatmap] epoch 8/20 batch 224/224 loss=0.1682
+[risk_heatmap] epoch 8/20 train_loss=0.1403 val_ap_risk_05s=0.1918 val_ap_risk_1s=0.1956
+[risk_heatmap] No improvement for 4 epochs.
+[risk_heatmap] epoch 9/20 batch 100/224 loss=0.1235
+[risk_heatmap] epoch 9/20 batch 200/224 loss=0.1458
+[risk_heatmap] epoch 9/20 batch 224/224 loss=0.1600
+[risk_heatmap] epoch 9/20 train_loss=0.1406 val_ap_risk_05s=0.1908 val_ap_risk_1s=0.1910
+[risk_heatmap] No improvement for 5 epochs.
+[risk_heatmap] Early stopping triggered after 9 epochs!
+[risk_heatmap] Done! Logs and checkpoints saved in runs/compare_baselines/risk_heatmap

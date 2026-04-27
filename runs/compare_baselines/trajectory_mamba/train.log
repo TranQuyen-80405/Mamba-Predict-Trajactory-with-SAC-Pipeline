@@ -1,0 +1,43 @@
+[trajectory_mamba] Starting training trajectory with mamba
+[trajectory_mamba] epoch 1/20 batch 100/224 loss=0.2315
+[trajectory_mamba] epoch 1/20 batch 200/224 loss=0.2222
+[trajectory_mamba] epoch 1/20 batch 224/224 loss=0.3447
+[trajectory_mamba] epoch 1/20 train_loss=0.2853 val_ADE_xy=0.4617 val_FDE_xy=0.4814
+[trajectory_mamba] New best model saved as best_ep1_trajectory_mamba.pt! Metric: 0.4617
+[trajectory_mamba] epoch 2/20 batch 100/224 loss=0.2385
+[trajectory_mamba] epoch 2/20 batch 200/224 loss=0.3080
+[trajectory_mamba] epoch 2/20 batch 224/224 loss=0.1810
+[trajectory_mamba] epoch 2/20 train_loss=0.2823 val_ADE_xy=0.4645 val_FDE_xy=0.4873
+[trajectory_mamba] No improvement for 1 epochs.
+[trajectory_mamba] epoch 3/20 batch 100/224 loss=0.3034
+[trajectory_mamba] epoch 3/20 batch 200/224 loss=0.2656
+[trajectory_mamba] epoch 3/20 batch 224/224 loss=0.2865
+[trajectory_mamba] epoch 3/20 train_loss=0.2785 val_ADE_xy=0.4566 val_FDE_xy=0.4825
+[trajectory_mamba] New best model saved as best_ep3_trajectory_mamba.pt! Metric: 0.4566
+[trajectory_mamba] epoch 4/20 batch 100/224 loss=0.3081
+[trajectory_mamba] epoch 4/20 batch 200/224 loss=0.3414
+[trajectory_mamba] epoch 4/20 batch 224/224 loss=0.2673
+[trajectory_mamba] epoch 4/20 train_loss=0.2760 val_ADE_xy=0.4573 val_FDE_xy=0.4831
+[trajectory_mamba] No improvement for 1 epochs.
+[trajectory_mamba] epoch 5/20 batch 100/224 loss=0.2397
+[trajectory_mamba] epoch 5/20 batch 200/224 loss=0.2279
+[trajectory_mamba] epoch 5/20 batch 224/224 loss=0.3129
+[trajectory_mamba] epoch 5/20 train_loss=0.2810 val_ADE_xy=0.4608 val_FDE_xy=0.4853
+[trajectory_mamba] No improvement for 2 epochs.
+[trajectory_mamba] epoch 6/20 batch 100/224 loss=0.2311
+[trajectory_mamba] epoch 6/20 batch 200/224 loss=0.2488
+[trajectory_mamba] epoch 6/20 batch 224/224 loss=0.2657
+[trajectory_mamba] epoch 6/20 train_loss=0.2709 val_ADE_xy=0.4584 val_FDE_xy=0.4831
+[trajectory_mamba] No improvement for 3 epochs.
+[trajectory_mamba] epoch 7/20 batch 100/224 loss=0.1629
+[trajectory_mamba] epoch 7/20 batch 200/224 loss=0.1591
+[trajectory_mamba] epoch 7/20 batch 224/224 loss=0.3840
+[trajectory_mamba] epoch 7/20 train_loss=0.2761 val_ADE_xy=0.4581 val_FDE_xy=0.4849
+[trajectory_mamba] No improvement for 4 epochs.
+[trajectory_mamba] epoch 8/20 batch 100/224 loss=0.2065
+[trajectory_mamba] epoch 8/20 batch 200/224 loss=0.1833
+[trajectory_mamba] epoch 8/20 batch 224/224 loss=0.1784
+[trajectory_mamba] epoch 8/20 train_loss=0.2746 val_ADE_xy=0.4609 val_FDE_xy=0.4880
+[trajectory_mamba] No improvement for 5 epochs.
+[trajectory_mamba] Early stopping triggered after 8 epochs!
+[trajectory_mamba] Done! Logs and checkpoints saved in runs/compare_baselines/trajectory_mamba

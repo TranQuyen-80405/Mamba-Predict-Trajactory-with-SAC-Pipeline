@@ -1,0 +1,48 @@
+[trajectory_transformer] Starting training trajectory with transformer
+[trajectory_transformer] epoch 1/20 batch 100/224 loss=0.1469
+[trajectory_transformer] epoch 1/20 batch 200/224 loss=0.2310
+[trajectory_transformer] epoch 1/20 batch 224/224 loss=0.3697
+[trajectory_transformer] epoch 1/20 train_loss=0.2762 val_ADE_xy=0.4658 val_FDE_xy=0.4863
+[trajectory_transformer] New best model saved as best_ep1_trajectory_transformer.pt! Metric: 0.4658
+[trajectory_transformer] epoch 2/20 batch 100/224 loss=0.3526
+[trajectory_transformer] epoch 2/20 batch 200/224 loss=0.3306
+[trajectory_transformer] epoch 2/20 batch 224/224 loss=0.2862
+[trajectory_transformer] epoch 2/20 train_loss=0.2434 val_ADE_xy=0.4701 val_FDE_xy=0.4956
+[trajectory_transformer] No improvement for 1 epochs.
+[trajectory_transformer] epoch 3/20 batch 100/224 loss=0.2264
+[trajectory_transformer] epoch 3/20 batch 200/224 loss=0.2695
+[trajectory_transformer] epoch 3/20 batch 224/224 loss=0.2562
+[trajectory_transformer] epoch 3/20 train_loss=0.2444 val_ADE_xy=0.4649 val_FDE_xy=0.4734
+[trajectory_transformer] New best model saved as best_ep3_trajectory_transformer.pt! Metric: 0.4649
+[trajectory_transformer] epoch 4/20 batch 100/224 loss=0.3604
+[trajectory_transformer] epoch 4/20 batch 200/224 loss=0.1849
+[trajectory_transformer] epoch 4/20 batch 224/224 loss=0.1862
+[trajectory_transformer] epoch 4/20 train_loss=0.2385 val_ADE_xy=0.4629 val_FDE_xy=0.4841
+[trajectory_transformer] New best model saved as best_ep4_trajectory_transformer.pt! Metric: 0.4629
+[trajectory_transformer] epoch 5/20 batch 100/224 loss=0.2717
+[trajectory_transformer] epoch 5/20 batch 200/224 loss=0.2071
+[trajectory_transformer] epoch 5/20 batch 224/224 loss=0.1824
+[trajectory_transformer] epoch 5/20 train_loss=0.2401 val_ADE_xy=0.4952 val_FDE_xy=0.5258
+[trajectory_transformer] No improvement for 1 epochs.
+[trajectory_transformer] epoch 6/20 batch 100/224 loss=0.2460
+[trajectory_transformer] epoch 6/20 batch 200/224 loss=0.2728
+[trajectory_transformer] epoch 6/20 batch 224/224 loss=0.3971
+[trajectory_transformer] epoch 6/20 train_loss=0.2407 val_ADE_xy=0.4881 val_FDE_xy=0.5117
+[trajectory_transformer] No improvement for 2 epochs.
+[trajectory_transformer] epoch 7/20 batch 100/224 loss=0.2006
+[trajectory_transformer] epoch 7/20 batch 200/224 loss=0.2932
+[trajectory_transformer] epoch 7/20 batch 224/224 loss=0.3841
+[trajectory_transformer] epoch 7/20 train_loss=0.2373 val_ADE_xy=0.5224 val_FDE_xy=0.5321
+[trajectory_transformer] No improvement for 3 epochs.
+[trajectory_transformer] epoch 8/20 batch 100/224 loss=0.2417
+[trajectory_transformer] epoch 8/20 batch 200/224 loss=0.2518
+[trajectory_transformer] epoch 8/20 batch 224/224 loss=0.1226
+[trajectory_transformer] epoch 8/20 train_loss=0.2289 val_ADE_xy=0.5393 val_FDE_xy=0.5724
+[trajectory_transformer] No improvement for 4 epochs.
+[trajectory_transformer] epoch 9/20 batch 100/224 loss=0.1826
+[trajectory_transformer] epoch 9/20 batch 200/224 loss=0.1562
+[trajectory_transformer] epoch 9/20 batch 224/224 loss=0.1712
+[trajectory_transformer] epoch 9/20 train_loss=0.2206 val_ADE_xy=0.5395 val_FDE_xy=0.5654
+[trajectory_transformer] No improvement for 5 epochs.
+[trajectory_transformer] Early stopping triggered after 9 epochs!
+[trajectory_transformer] Done! Logs and checkpoints saved in runs/compare_baselines/trajectory_transformer

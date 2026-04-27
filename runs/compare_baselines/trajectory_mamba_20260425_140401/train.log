@@ -1,0 +1,11 @@
+[trajectory_mamba_20260425_140401] Starting training trajectory with mamba
+[trajectory_mamba_20260425_140401] epoch 1/20 batch 10 loss=0.3360
+[trajectory_mamba_20260425_140401] epoch 1/20 batch 20 loss=0.2234
+[trajectory_mamba_20260425_140401] epoch 1/20 batch 30 loss=0.3299
+[trajectory_mamba_20260425_140401] epoch 1/20 batch 40 loss=0.2299
+[trajectory_mamba_20260425_140401] epoch 1/20 batch 50 loss=0.2867
+[trajectory_mamba_20260425_140401] epoch 1/20 batch 60 loss=0.2158
+[trajectory_mamba_20260425_140401] epoch 1/20 batch 70 loss=0.2095
+[trajectory_mamba_20260425_140401] epoch 1/20 batch 80 loss=0.3633
+[trajectory_mamba_20260425_140401] epoch 1/20 batch 90 loss=0.2209
+[trajectory_mamba_20260425_140401] epoch 1/20 batch 100 loss=0.3368

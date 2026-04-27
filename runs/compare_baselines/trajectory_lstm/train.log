@@ -1,0 +1,48 @@
+[trajectory_lstm] Starting training trajectory with lstm
+[trajectory_lstm] epoch 1/20 batch 100/224 loss=0.2883
+[trajectory_lstm] epoch 1/20 batch 200/224 loss=0.3152
+[trajectory_lstm] epoch 1/20 batch 224/224 loss=0.3130
+[trajectory_lstm] epoch 1/20 train_loss=0.2879 val_ADE_xy=0.4605 val_FDE_xy=0.4783
+[trajectory_lstm] New best model saved as best_ep1_trajectory_lstm.pt! Metric: 0.4605
+[trajectory_lstm] epoch 2/20 batch 100/224 loss=0.2614
+[trajectory_lstm] epoch 2/20 batch 200/224 loss=0.2855
+[trajectory_lstm] epoch 2/20 batch 224/224 loss=0.4000
+[trajectory_lstm] epoch 2/20 train_loss=0.2798 val_ADE_xy=0.4588 val_FDE_xy=0.4818
+[trajectory_lstm] New best model saved as best_ep2_trajectory_lstm.pt! Metric: 0.4588
+[trajectory_lstm] epoch 3/20 batch 100/224 loss=0.2923
+[trajectory_lstm] epoch 3/20 batch 200/224 loss=0.3320
+[trajectory_lstm] epoch 3/20 batch 224/224 loss=0.2771
+[trajectory_lstm] epoch 3/20 train_loss=0.2759 val_ADE_xy=0.4686 val_FDE_xy=0.5101
+[trajectory_lstm] No improvement for 1 epochs.
+[trajectory_lstm] epoch 4/20 batch 100/224 loss=0.2049
+[trajectory_lstm] epoch 4/20 batch 200/224 loss=0.3735
+[trajectory_lstm] epoch 4/20 batch 224/224 loss=0.2318
+[trajectory_lstm] epoch 4/20 train_loss=0.2472 val_ADE_xy=0.4528 val_FDE_xy=0.4779
+[trajectory_lstm] New best model saved as best_ep4_trajectory_lstm.pt! Metric: 0.4528
+[trajectory_lstm] epoch 5/20 batch 100/224 loss=0.2348
+[trajectory_lstm] epoch 5/20 batch 200/224 loss=0.1730
+[trajectory_lstm] epoch 5/20 batch 224/224 loss=0.2037
+[trajectory_lstm] epoch 5/20 train_loss=0.2537 val_ADE_xy=0.4610 val_FDE_xy=0.4837
+[trajectory_lstm] No improvement for 1 epochs.
+[trajectory_lstm] epoch 6/20 batch 100/224 loss=0.2589
+[trajectory_lstm] epoch 6/20 batch 200/224 loss=0.1939
+[trajectory_lstm] epoch 6/20 batch 224/224 loss=0.3568
+[trajectory_lstm] epoch 6/20 train_loss=0.2431 val_ADE_xy=0.4652 val_FDE_xy=0.4915
+[trajectory_lstm] No improvement for 2 epochs.
+[trajectory_lstm] epoch 7/20 batch 100/224 loss=0.3097
+[trajectory_lstm] epoch 7/20 batch 200/224 loss=0.1966
+[trajectory_lstm] epoch 7/20 batch 224/224 loss=0.1536
+[trajectory_lstm] epoch 7/20 train_loss=0.2438 val_ADE_xy=0.4707 val_FDE_xy=0.4965
+[trajectory_lstm] No improvement for 3 epochs.
+[trajectory_lstm] epoch 8/20 batch 100/224 loss=0.3196
+[trajectory_lstm] epoch 8/20 batch 200/224 loss=0.2836
+[trajectory_lstm] epoch 8/20 batch 224/224 loss=0.1316
+[trajectory_lstm] epoch 8/20 train_loss=0.2399 val_ADE_xy=0.4728 val_FDE_xy=0.5028
+[trajectory_lstm] No improvement for 4 epochs.
+[trajectory_lstm] epoch 9/20 batch 100/224 loss=0.1409
+[trajectory_lstm] epoch 9/20 batch 200/224 loss=0.2158
+[trajectory_lstm] epoch 9/20 batch 224/224 loss=0.1481
+[trajectory_lstm] epoch 9/20 train_loss=0.2347 val_ADE_xy=0.4690 val_FDE_xy=0.4991
+[trajectory_lstm] No improvement for 5 epochs.
+[trajectory_lstm] Early stopping triggered after 9 epochs!
+[trajectory_lstm] Done! Logs and checkpoints saved in runs/compare_baselines/trajectory_lstm

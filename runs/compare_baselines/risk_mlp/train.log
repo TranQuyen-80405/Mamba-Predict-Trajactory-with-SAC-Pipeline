@@ -1,0 +1,78 @@
+[risk_mlp] Starting training risk with mlp
+[risk_mlp] epoch 1/20 batch 100/224 loss=0.1428
+[risk_mlp] epoch 1/20 batch 200/224 loss=0.1337
+[risk_mlp] epoch 1/20 batch 224/224 loss=0.1510
+[risk_mlp] epoch 1/20 train_loss=0.1446 val_ap_risk_05s=0.1569 val_ap_risk_1s=0.1758
+[risk_mlp] New best model saved as best_ep1_risk_mlp.pt! Metric: 0.1758
+[risk_mlp] epoch 2/20 batch 100/224 loss=0.1301
+[risk_mlp] epoch 2/20 batch 200/224 loss=0.1546
+[risk_mlp] epoch 2/20 batch 224/224 loss=0.1756
+[risk_mlp] epoch 2/20 train_loss=0.1396 val_ap_risk_05s=0.1621 val_ap_risk_1s=0.1760
+[risk_mlp] New best model saved as best_ep2_risk_mlp.pt! Metric: 0.1760
+[risk_mlp] epoch 3/20 batch 100/224 loss=0.1328
+[risk_mlp] epoch 3/20 batch 200/224 loss=0.1345
+[risk_mlp] epoch 3/20 batch 224/224 loss=0.1519
+[risk_mlp] epoch 3/20 train_loss=0.1408 val_ap_risk_05s=0.1685 val_ap_risk_1s=0.1716
+[risk_mlp] No improvement for 1 epochs.
+[risk_mlp] epoch 4/20 batch 100/224 loss=0.1551
+[risk_mlp] epoch 4/20 batch 200/224 loss=0.1533
+[risk_mlp] epoch 4/20 batch 224/224 loss=0.1422
+[risk_mlp] epoch 4/20 train_loss=0.1408 val_ap_risk_05s=0.1747 val_ap_risk_1s=0.1723
+[risk_mlp] No improvement for 2 epochs.
+[risk_mlp] epoch 5/20 batch 100/224 loss=0.1362
+[risk_mlp] epoch 5/20 batch 200/224 loss=0.1424
+[risk_mlp] epoch 5/20 batch 224/224 loss=0.1397
+[risk_mlp] epoch 5/20 train_loss=0.1405 val_ap_risk_05s=0.1774 val_ap_risk_1s=0.1750
+[risk_mlp] No improvement for 3 epochs.
+[risk_mlp] epoch 6/20 batch 100/224 loss=0.1400
+[risk_mlp] epoch 6/20 batch 200/224 loss=0.1364
+[risk_mlp] epoch 6/20 batch 224/224 loss=0.1364
+[risk_mlp] epoch 6/20 train_loss=0.1409 val_ap_risk_05s=0.1803 val_ap_risk_1s=0.1810
+[risk_mlp] New best model saved as best_ep6_risk_mlp.pt! Metric: 0.1810
+[risk_mlp] epoch 7/20 batch 100/224 loss=0.1170
+[risk_mlp] epoch 7/20 batch 200/224 loss=0.1282
+[risk_mlp] epoch 7/20 batch 224/224 loss=0.1130
+[risk_mlp] epoch 7/20 train_loss=0.1393 val_ap_risk_05s=0.1951 val_ap_risk_1s=0.1826
+[risk_mlp] New best model saved as best_ep7_risk_mlp.pt! Metric: 0.1826
+[risk_mlp] epoch 8/20 batch 100/224 loss=0.1399
+[risk_mlp] epoch 8/20 batch 200/224 loss=0.1481
+[risk_mlp] epoch 8/20 batch 224/224 loss=0.1340
+[risk_mlp] epoch 8/20 train_loss=0.1401 val_ap_risk_05s=0.2171 val_ap_risk_1s=0.1822
+[risk_mlp] No improvement for 1 epochs.
+[risk_mlp] epoch 9/20 batch 100/224 loss=0.1464
+[risk_mlp] epoch 9/20 batch 200/224 loss=0.1312
+[risk_mlp] epoch 9/20 batch 224/224 loss=0.1363
+[risk_mlp] epoch 9/20 train_loss=0.1401 val_ap_risk_05s=0.2262 val_ap_risk_1s=0.1864
+[risk_mlp] New best model saved as best_ep9_risk_mlp.pt! Metric: 0.1864
+[risk_mlp] epoch 10/20 batch 100/224 loss=0.1096
+[risk_mlp] epoch 10/20 batch 200/224 loss=0.1564
+[risk_mlp] epoch 10/20 batch 224/224 loss=0.1417
+[risk_mlp] epoch 10/20 train_loss=0.1394 val_ap_risk_05s=0.2314 val_ap_risk_1s=0.2207
+[risk_mlp] New best model saved as best_ep10_risk_mlp.pt! Metric: 0.2207
+[risk_mlp] epoch 11/20 batch 100/224 loss=0.1264
+[risk_mlp] epoch 11/20 batch 200/224 loss=0.1351
+[risk_mlp] epoch 11/20 batch 224/224 loss=0.1314
+[risk_mlp] epoch 11/20 train_loss=0.1399 val_ap_risk_05s=0.2239 val_ap_risk_1s=0.2143
+[risk_mlp] No improvement for 1 epochs.
+[risk_mlp] epoch 12/20 batch 100/224 loss=0.1374
+[risk_mlp] epoch 12/20 batch 200/224 loss=0.1429
+[risk_mlp] epoch 12/20 batch 224/224 loss=0.1267
+[risk_mlp] epoch 12/20 train_loss=0.1388 val_ap_risk_05s=0.2210 val_ap_risk_1s=0.1909
+[risk_mlp] No improvement for 2 epochs.
+[risk_mlp] epoch 13/20 batch 100/224 loss=0.1416
+[risk_mlp] epoch 13/20 batch 200/224 loss=0.1344
+[risk_mlp] epoch 13/20 batch 224/224 loss=0.1405
+[risk_mlp] epoch 13/20 train_loss=0.1396 val_ap_risk_05s=0.2261 val_ap_risk_1s=0.1917
+[risk_mlp] No improvement for 3 epochs.
+[risk_mlp] epoch 14/20 batch 100/224 loss=0.1263
+[risk_mlp] epoch 14/20 batch 200/224 loss=0.1249
+[risk_mlp] epoch 14/20 batch 224/224 loss=0.1316
+[risk_mlp] epoch 14/20 train_loss=0.1384 val_ap_risk_05s=0.2199 val_ap_risk_1s=0.2044
+[risk_mlp] No improvement for 4 epochs.
+[risk_mlp] epoch 15/20 batch 100/224 loss=0.1371
+[risk_mlp] epoch 15/20 batch 200/224 loss=0.1659
+[risk_mlp] epoch 15/20 batch 224/224 loss=0.1332
+[risk_mlp] epoch 15/20 train_loss=0.1383 val_ap_risk_05s=0.2158 val_ap_risk_1s=0.2046
+[risk_mlp] No improvement for 5 epochs.
+[risk_mlp] Early stopping triggered after 15 epochs!
+[risk_mlp] Done! Logs and checkpoints saved in runs/compare_baselines/risk_mlp
