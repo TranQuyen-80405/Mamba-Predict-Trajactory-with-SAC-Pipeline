@@ -74,14 +74,18 @@ def evaluate_risk(logits_cat, t_cat, v_cat):
 def get_pts_tensor(pts_seq, dev):
     if isinstance(pts_seq, list):
         # pts_seq is list of length T, each containing list of length B tensors
-        # Stack to create (T, B, C, H, W)
         t_list = []
         for time_step in pts_seq:
             t_list.append(torch.stack([p for p in time_step]))
         x = torch.stack(t_list).to(dev) # (T, B, C, H, W)
-        x = x.transpose(0, 1).contiguous() # (B, T, C, H, W)
-        return x
-    return pts_seq.to(dev)
+    else:
+        # pts_seq is already a tensor (T, B, C, H, W) from collate_riskbatch
+        x = pts_seq.to(dev)
+    
+    # Always ensure output is (Batch, Time, Channels, Height, Width)
+    if x.ndim == 5:
+        x = x.transpose(0, 1).contiguous()
+    return x
 
 def main():
     ap = argparse.ArgumentParser()
@@ -95,6 +99,7 @@ def main():
     ap.add_argument("--lr", type=float, default=5e-5)
     ap.add_argument("--num_workers", type=int, default=0)
     ap.add_argument("--T_ctx", type=int, default=40)
+    ap.add_argument("--patience", type=int, default=5, help="Early stopping patience")
     args = ap.parse_args()
 
     dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -116,7 +121,7 @@ def main():
     model = build_model(args.task, args.model, in_channels=384, horizon=10, device=dev)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.05)
     
-    rn = f"{args.task}_{args.model}_{time.strftime('%Y%m%d_%H%M%S')}"
+    rn = f"{args.task}_{args.model}"
     run_dir = Path(args.log_root) / rn
     run_dir.mkdir(parents=True, exist_ok=True)
     writer = SummaryWriter(str(run_dir))
@@ -129,7 +134,23 @@ def main():
 
     log_print(f"[{rn}] Starting training {args.task} with {args.model}")
 
-    for epoch in range(args.epochs):
+    best_val_metric = None
+    epochs_no_improve = 0
+    start_epoch = 0
+    ckpt_dir = run_dir / "checkpoints"
+    ckpt_dir.mkdir(exist_ok=True)
+    
+    last_ckpt_path = ckpt_dir / f"last_checkpoint_{args.task}_{args.model}.pt"
+    if last_ckpt_path.exists():
+        checkpoint = torch.load(last_ckpt_path, map_location=dev)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        opt.load_state_dict(checkpoint['optimizer_state_dict'])
+        start_epoch = checkpoint['epoch']
+        best_val_metric = checkpoint['best_val_metric']
+        epochs_no_improve = checkpoint['epochs_no_improve']
+        log_print(f"[{rn}] Resumed training from epoch {start_epoch}")
+
+    for epoch in range(start_epoch, args.epochs):
         model.train()
         epoch_loss = 0.0
         for micro_i, batch in enumerate(train_loader):
@@ -159,7 +180,7 @@ def main():
             epoch_loss += loss.item()
 
             if (micro_i + 1) % 100 == 0 or (micro_i + 1) == len(train_loader):
-                log_print(f"[{rn}] epoch {epoch + 1}/{args.epochs} batch {micro_i + 1} loss={loss.item():.4f}")
+                log_print(f"[{rn}] epoch {epoch + 1}/{args.epochs} batch {micro_i + 1}/{len(train_loader)} loss={loss.item():.4f}")
 
         # Validation
         model.eval()
@@ -207,12 +228,49 @@ def main():
         for k, v in metrics.items():
             writer.add_scalar(f"val/{k}", float(v), epoch)
 
-    # Save model
-    ckpt_dir = run_dir / "checkpoints"
-    ckpt_dir.mkdir(exist_ok=True)
-    torch.save(model.state_dict(), ckpt_dir / "final_model.pt")
+        # Early Stopping Logic
+        if args.task == 'trajectory':
+            current_metric = metrics['traj_ade_xy_m']
+            improved = best_val_metric is None or current_metric < best_val_metric
+        else:
+            current_metric = metrics.get('ap_risk_1s', 0)
+            improved = best_val_metric is None or current_metric > best_val_metric
+
+        if improved:
+            best_val_metric = current_metric
+            epochs_no_improve = 0
+            
+            # Remove old best model if exists
+            for old_best in ckpt_dir.glob(f"best_ep*_{args.task}_{args.model}.pt"):
+                old_best.unlink()
+                
+            best_model_name = f"best_ep{epoch + 1}_{args.task}_{args.model}.pt"
+            torch.save(model.state_dict(), ckpt_dir / best_model_name)
+            log_print(f"[{rn}] New best model saved as {best_model_name}! Metric: {current_metric:.4f}")
+            
+            best_summary_path = run_dir / f"val_metrics_best_{args.task}_{args.model}.json"
+            with best_summary_path.open("w") as f:
+                json.dump(metrics, f, indent=2)
+        else:
+            epochs_no_improve += 1
+            log_print(f"[{rn}] No improvement for {epochs_no_improve} epochs.")
+            if epochs_no_improve >= args.patience:
+                log_print(f"[{rn}] Early stopping triggered after {epoch + 1} epochs!")
+                break
+                
+        # Save last checkpoint for resuming
+        torch.save({
+            'epoch': epoch + 1,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': opt.state_dict(),
+            'best_val_metric': best_val_metric,
+            'epochs_no_improve': epochs_no_improve
+        }, last_ckpt_path)
+
+    # Save final model
+    torch.save(model.state_dict(), ckpt_dir / f"final_ep{args.epochs}_{args.task}_{args.model}.pt")
     
-    summary_path = run_dir / "val_metrics_final.json"
+    summary_path = run_dir / f"val_metrics_final_{args.task}_{args.model}.json"
     with summary_path.open("w") as f:
         json.dump(metrics, f, indent=2)
     
